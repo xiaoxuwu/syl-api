@@ -54,6 +54,12 @@ Once the container is built, you may run with two methods:
 For production and full integration testing:
 
 ```
+make run-prd
+```
+
+For development and simulating production deployment:
+
+```
 make run-dev
 ```
 
