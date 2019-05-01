@@ -1,86 +1,108 @@
 # Shop-Your-Links
 
 ## 1 Introduction
-This project contains source code for a ShopYourLinks, a ShopYourLikes competitor to LinkTree. This document contains high-level information about this repository as well as set-up and run instructions.
+
+This project contains source code for ShopYourLinks, a [Shop Your Likes](https://shopyourlikes.com/) competitor to [Linktree](https://linktr.ee/). This document contains high-level information about this repository as well as set-up and run instructions.
 
 ### 1.1 Tech Stack
 
 #### Core
 
-- Python
-- Docker (infrastructure and containerization)
-- Django + DRF (web framework)
-- Postgresql (database)  
-- Node.js + React (front-end)
+- **Python**
+- **Docker/Docker-Compose**: infrastructure and containerization
+- **Django + DRF**: web framework
+- **PostgreSQL**: database
+- **Node.js + React**: front-end
 
 #### Secondary
 
 - Plotting library TBD  (plotting)
 
+### 1.2 Team
+
+- Katie Luangkote
+- Katrina Wijaya
+- Xiaoxu (Carter) Wu
+- Jennifer Xu
+- Yun Xu
+
+
+
 ## 2 Set Up
 
-1. Clone this repository
+1. Clone this repository: https://github.com/xiaoxuwu/Shop-Your-Links.git
 
 2. Set up Docker
 
-    Mac: https://docs.docker.com/docker-for-mac/install/
+    - Mac: https://docs.docker.com/docker-for-mac/install/
 
-    PC: https://docs.docker.com/toolbox/toolbox_install_windows/
+    - PC: https://docs.docker.com/toolbox/toolbox_install_windows/
 
 3. Build container
 
-    Startup a terminal (Mac) or the docker-toolbox shell (PC), and type in the following commands:
+    - Startup a terminal (Mac) or the docker-toolbox shell (PC), and type in the following commands:
 
-    ```
-    make build
+    ```bash
+    $ make build
     ```
     
 4. First Migration and create Admin account for Django Admin (In another terminal (Mac) or the docker-toolbox shell (PC) window). You can use this to log in as a normal user.
 
     ```
-    docker-compose run web sh
-    python manage.py migrate
-    python manage.py createsuperuser
+    # docker-compose run web sh
+    # python manage.py migrate
+    # python manage.py createsuperuser
     
     ... follow prompts to create super user ...
     
-    exit
+    # exit
     ```
+
+
 
 ## 3 Run
 
-Once the container is built, you may run with two methods:
+- Build container
 
-For production and full integration testing:
+  ```bash
+  $ make build
+  ```
 
-```
-make run-prd
-```
+- Once the container is built, you may run with the following methods:
 
-For development and simulating production deployment:
+  1. For production and full integration testing:
 
-```
-make run-dev
-```
+     ```bash
+     $ make run-prd
+     ```
 
-For development and debugging (with pdb and full-debugger):
+  2. For development and simulating production deployment:
 
-```
-make run-debug
-```
+     ```bash
+     $ make run-dev
+     ```
 
-You may now go to http://localhost:8000 with your browser to see the site. Go to /admin for admin panel, and
-log in with credentials from 2.5
+  3. For development and debugging (with pdb and full-debugger):
 
-## 3.1 Quitting
+     ```bash
+     $ make run-debug
+     ```
 
-Use Ctrl+C to quit the running server. To stop all containers, run:
+- Navigate to http://localhost:8000 with your browser to see the site.
 
-```
-make exit
-```
+  - Go to `/admin` for the admin panel, and login with credentials from **2.4**
 
-This command is automatically run before all makefile run commands, so you do not need to do it unless you are using docker-compose manually.
+- Use `CTRL+C` to quit the running server.
+
+- To stop all containers, run:
+
+  ```bash
+  $ make exit
+  ```
+
+  - This command is automatically run before all Makefile run commands, so you do not need to do it unless you are using docker-compose manually.
+
+  
 
 ## 4 Annotated Layout
 ```
