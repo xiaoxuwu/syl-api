@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="uk-container uk-container-small">
+
+    <div class="uk-child-width-1-2@m uk-grid-medium uk-grid-match uk-flex-center" uk-grid>
+        <div>
+            <div class="uk-card uk-card-default uk-card-body uk-margin-top">
+                <form action="{% url 'login_submit' %}" method="post">
+                    {% csrf_token %}
+                    <fieldset class="uk-fieldset">
+                    <legend class="uk-legend">Please Log In</legend>
+                    {% if error_message %}
+                    <div class="uk-alert-danger" uk-alert>
+                            <a class="uk-alert-close" uk-close></a>
+                            <p class="">{{ error_message }}</p>
+                    </div>
+                    {% endif %}
+                    <div class="uk-margin"><input class="uk-input" type="text" placeholder="username" name="username"></div>
+                    <div class="uk-margin"><input class="uk-input" type="password" placeholder="password" name="password"></div>
+                    </fieldset>
+                    <input type="submit" class="uk-button uk-button-default" value="Login &rarrb;">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

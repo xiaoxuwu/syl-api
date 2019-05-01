@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: Us7JdibopXhaLRScZIIplUOzv9HcWzz5
+      PGDATA: /var/lib/postgresql/data
+  web:
+    build: .
+    command: ./docker-entrypoint.sh
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  data:
