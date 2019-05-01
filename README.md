@@ -32,17 +32,10 @@ This project contains source code for a ShopYourLinks, a ShopYourLikes competito
     Startup a terminal (Mac) or the docker-toolbox shell (PC), and type in the following commands:
 
     ```
-    docker-compose build
-    ```
-
-4. Give executing permissions to critical scripts
-   
-    ```
-    sudo chmod +x docker-entrypoint.sh
-    sudo chmod +x start_dev_docker
+    make build
     ```
     
-5. First Migration and create Admin account for Django Admin (In another terminal (Mac) or the docker-toolbox shell (PC) window). You can use this to log in as a normal user.
+4. First Migration and create Admin account for Django Admin (In another terminal (Mac) or the docker-toolbox shell (PC) window). You can use this to log in as a normal user.
 
     ```
     docker-compose run web sh
@@ -61,13 +54,13 @@ Once the container is built, you may run with two methods:
 For production and full integration testing:
 
 ```
-docker-compose up
+make run-dev
 ```
 
 For development and debugging (with pdb and full-debugger):
 
 ```
-./start_dev_docker
+make run-debug
 ```
 
 You may now go to http://localhost:8000 with your browser to see the site. Go to /admin for admin panel, and
@@ -75,19 +68,20 @@ log in with credentials from 2.5
 
 ## 3.1 Quitting
 
-Use Ctrl+C to quit the running server. You may also need to run:
+Use Ctrl+C to quit the running server. To stop all containers, run:
 
 ```
-docker-compose down
+make exit
 ```
 
-To ensure that containers have shut down properly.
+This command is automatically run before all makefile run commands, so you do not need to do it unless you are using docker-compose manually.
 
 ## 4 Annotated Layout
 ```
 .
 ├── Dockerfile <- setup file used during Docker image initialization
 ├── README.md <- this file
+├── Makefile
 ├── docker-compose.yml <- setup file used during Docker image initialization
 ├── docker-entrypoint.sh <- file run to start the server
 ├── internal <- internal source folder containing most of the logic
