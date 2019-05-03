@@ -13,7 +13,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class Preferences(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    # image = models.ImageField()
+    image = models.ImageField(null=True)
 
 # create Preferences object when User is created
 @receiver(post_save, sender=User)
