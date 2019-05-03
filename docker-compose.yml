@@ -9,7 +9,9 @@ services:
       POSTGRES_PASSWORD: Us7JdibopXhaLRScZIIplUOzv9HcWzz5
       PGDATA: /var/lib/postgresql/data
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-web
     command: ./docker-entrypoint.sh
     volumes:
       - .:/app

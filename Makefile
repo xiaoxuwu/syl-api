@@ -8,5 +8,7 @@ run-prd: exit
 	docker-compose up -d
 run-debug: exit
 	docker-compose run --service-ports web
+run-sh: exit
+	docker-compose run web sh
 exit:
 	docker-compose down

@@ -46,7 +46,7 @@ This project contains source code for ShopYourLinks, a [Shop Your Likes](https:/
     $ make build
     ```
     
-4. First Migration and create Admin account for Django Admin (In another terminal (Mac) or the docker-toolbox shell (PC) window). You can use this to log in as a normal user.
+4. Run first migration and create admin account for Django Admin (In another terminal (Mac) or the docker-toolbox shell (PC) window). You can use this to log in as a normal user. Note first line is run in shell (hence '$'), while second two lines are run in the docker container's shell (hence '#'). DO NOT include '$' or '#' in commands.
 
     ```
     $ docker-compose run web sh
@@ -64,9 +64,9 @@ This project contains source code for ShopYourLinks, a [Shop Your Likes](https:/
 
 - Build container if necessary (when Carter says to)
 
-  ```bash
-  $ make build
-  ```
+    ```bash
+    $ make build
+    ```
 
 - Once the container is built, you may run with the following methods:
 
@@ -118,7 +118,6 @@ This project contains source code for ShopYourLinks, a [Shop Your Likes](https:/
 │   ├── migrations <- folder containing database migration files
 │   │   ├── ...
 │   ├── models.py <- Classes specifying the data model
-│   ├── templates <- folder containing html files
 │   │   ├── ...
 │   ├── tests.py
 │   ├── urls.py <- file specifying endpoint URLs and associated views
@@ -131,8 +130,24 @@ This project contains source code for ShopYourLinks, a [Shop Your Likes](https:/
 │   ├── urls.py <- top level endpoint specification
 │   └── wsgi.py <- wsgi server configuration
 ├── requirements.txt <- requirements file specifying all python dependencies
-├── start_dev_docker <- script to start terminal pointed at backend, not master
 └── static <- static css files
     └── css 
         └── style.css
 ```
+
+## 5 Makefile Commands
+
+
+`make init` configure system (run once)
+
+`make build` build containers (ask Carter)
+
+`run-dev` start containers with dev settings
+
+`make run-prd` start containers with production settings
+
+`make run-debug` start containers with pdb ability
+
+`make run-sh` start sh in docker container
+
+`make exit` shut down all containers
