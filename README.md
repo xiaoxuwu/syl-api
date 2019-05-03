@@ -62,7 +62,7 @@ This project contains source code for ShopYourLinks, a [Shop Your Likes](https:/
 
 ## 3 Run
 
-- Build container
+- Build container if necessary (when Carter says to)
 
   ```bash
   $ make build
