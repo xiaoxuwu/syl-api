@@ -15,6 +15,9 @@ class Preferences(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.ImageField(null=True)
 
+    def __str__(self):
+        return self.user.username
+
 # create Preferences object when User is created
 @receiver(post_save, sender=User)
 def create_user_preferences(sender, instance, created, **kwargs):
@@ -38,4 +41,4 @@ class Event(models.Model):
     time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.time
+        return '%s (%s)' % (self.link, self.time)
