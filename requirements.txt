@@ -5,3 +5,5 @@ pygal==2.4.0
 django-cleanup==3.2.0
 djangorestframework==3.9.3
 Pillow==6.0.0
+django-jet==1.0.8
+feedparser==5.2.1

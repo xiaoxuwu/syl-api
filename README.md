@@ -12,21 +12,21 @@ This project contains source code for ShopYourLinks, a [Shop Your Likes](https:/
 - **Docker/Docker-Compose**: infrastructure and containerization
 - **Django + DRF**: web framework
 - **PostgreSQL**: database
-- **Node.js + React**: front-end
+- **Yarn + React**: front-end
+
+DRYP stack (Django, React, Yarn, PostgreSQL)
 
 #### Secondary
 
 - Plotting library TBD  (plotting)
 
-### 1.2 Team
+### 1.2 Maintainers
 
 - Katie Luangkote
 - Katrina Wijaya
 - Xiaoxu (Carter) Wu
 - Jennifer Xu
 - Yun Xu
-
-
 
 ## 2 Set Up
 
