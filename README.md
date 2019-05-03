@@ -8,7 +8,7 @@ This project contains source code for ShopYourLinks, a [Shop Your Likes](https:/
 
 #### Core
 
-- **Python**
+- **Python 3**
 - **Docker/Docker-Compose**: infrastructure and containerization
 - **Django + DRF**: web framework
 - **PostgreSQL**: database
