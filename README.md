@@ -49,7 +49,7 @@ This project contains source code for ShopYourLinks, a [Shop Your Likes](https:/
 4. First Migration and create Admin account for Django Admin (In another terminal (Mac) or the docker-toolbox shell (PC) window). You can use this to log in as a normal user.
 
     ```
-    # docker-compose run web sh
+    $ docker-compose run web sh
     # python manage.py migrate
     # python manage.py createsuperuser
     
