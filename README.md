@@ -1,24 +1,8 @@
-# Shop-Your-Links
+# syl-api
 
 ## 1 Introduction
 
-This project contains source code for ShopYourLinks, a [Shop Your Likes](https://shopyourlikes.com/) competitor to [Linktree](https://linktr.ee/). This document contains high-level information about this repository as well as set-up and run instructions.
-
-### 1.1 Tech Stack
-
-#### Core
-
-- **Django + DRF**: web framework
-- **Yarn + React**: front-end
-- **PostgreSQL**: database
-
-DRYP stack (Django, React, Yarn, PostgreSQL)
-
-#### Secondary
-
-- **Docker/Docker-Compose**: infrastructure and containerization
-- **Python 3**
-- Plotting library TBD  (plotting)
+This project contains backend source code for ShopYourLinks, a [Shop Your Likes](https://shopyourlikes.com/) competitor to [Linktree](https://linktr.ee/). This document contains high-level information about this repository as well as set-up and run instructions for the backend microservice.
 
 ### 1.2 Maintainers
 
@@ -57,7 +41,6 @@ DRYP stack (Django, React, Yarn, PostgreSQL)
     
     # exit
     ```
-
 
 
 ## 3 Run
