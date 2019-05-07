@@ -1,10 +1,10 @@
 # syl-api
 
-This repo is part of https://github.com/xiaoxuwu/ShopYourLinks
+This repo is part of https://github.com/xiaoxuwu/ShopYourLinks. See the frontend source code here: https://github.com/xiaoxuwu/syl-frontend.git.
 
 ## 1 Introduction
 
-This project contains backend source code for ShopYourLinks, a [Shop Your Likes](https://shopyourlikes.com/) competitor to [Linktree](https://linktr.ee/). This document contains high-level information about this repository as well as set-up and run instructions for the backend microservice.
+This project contains the backend source code for ShopYourLinks, a [Shop Your Likes](https://shopyourlikes.com/) competitor to [Linktree](https://linktr.ee/). This document contains high-level information about this repository as well as set-up and run instructions for the backend microservice.
 
 ### 1.2 Maintainers
 
@@ -16,7 +16,7 @@ This project contains backend source code for ShopYourLinks, a [Shop Your Likes]
 
 ## 2 Set Up
 
-1. Clone this repository: https://github.com/xiaoxuwu/Shop-Your-Links.git
+1. Clone this repository: https://github.com/xiaoxuwu/syl-api.git
 
 2. Set up Docker
 
@@ -35,7 +35,7 @@ This project contains backend source code for ShopYourLinks, a [Shop Your Likes]
 4. Run first migration and create admin account for Django Admin (In another terminal (Mac) or the docker-toolbox shell (PC) window). You can use this to log in as a normal user. Note first line is run in shell (hence '$'), while second two lines are run in the docker container's shell (hence '#'). DO NOT include '$' or '#' in commands.
 
     ```
-    $ docker-compose run web sh
+    $ make run-sh
     # python manage.py migrate
     # python manage.py createsuperuser
     
@@ -73,7 +73,8 @@ $ make build
      $ make run-debug
      ```
 
-2. Navigate to http://localhost:8000 with your browser to see the site.
+2. Navigate to http://localhost:8000 at allowed routes with your browser to see the site.
+    - Go to `/api` for API specifications
 
     - Go to `/admin` for the admin panel, and login with credentials from **2.4**
 
@@ -82,7 +83,7 @@ $ make build
      ```bash
      $ make exit
      ```
-
+     
     - This command is automatically run before all Makefile run commands, so you do not need to do it unless you are using docker-compose manually.
 
   
