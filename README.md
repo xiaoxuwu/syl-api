@@ -1,5 +1,7 @@
 # syl-api
 
+This repo is part of https://github.com/xiaoxuwu/ShopYourLinks
+
 ## 1 Introduction
 
 This project contains backend source code for ShopYourLinks, a [Shop Your Likes](https://shopyourlikes.com/) competitor to [Linktree](https://linktr.ee/). This document contains high-level information about this repository as well as set-up and run instructions for the backend microservice.
