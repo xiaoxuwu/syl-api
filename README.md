@@ -8,25 +8,25 @@ This project contains source code for ShopYourLinks, a [Shop Your Likes](https:/
 
 #### Core
 
-- **Python 3**
-- **Docker/Docker-Compose**: infrastructure and containerization
 - **Django + DRF**: web framework
+- **Yarn + React**: front-end
 - **PostgreSQL**: database
-- **Node.js + React**: front-end
+
+DRYP stack (Django, React, Yarn, PostgreSQL)
 
 #### Secondary
 
+- **Docker/Docker-Compose**: infrastructure and containerization
+- **Python 3**
 - Plotting library TBD  (plotting)
 
-### 1.2 Team
+### 1.2 Maintainers
 
 - Katie Luangkote
 - Katrina Wijaya
 - Xiaoxu (Carter) Wu
 - Jennifer Xu
 - Yun Xu
-
-
 
 ## 2 Set Up
 
@@ -62,45 +62,43 @@ This project contains source code for ShopYourLinks, a [Shop Your Likes](https:/
 
 ## 3 Run
 
-- Build container if necessary (when Carter says to)
+Build container if necessary (when Carter says to)
 
-    ```bash
-    $ make build
-    ```
+```bash
+$ make build
+```
 
-- Once the container is built, you may run with the following methods:
+1. Once the container is built, you may run with the following methods:
 
-  1. For production and full integration testing:
+    - For production and full integration testing:
 
      ```bash
      $ make run-prd
      ```
 
-  2. For development and simulating production deployment:
+    - For development and simulating production deployment:
 
      ```bash
      $ make run-dev
      ```
 
-  3. For development and debugging (with pdb and full-debugger):
+    - For development and debugging (with pdb and full-debugger):
 
      ```bash
      $ make run-debug
      ```
 
-- Navigate to http://localhost:8000 with your browser to see the site.
+2. Navigate to http://localhost:8000 with your browser to see the site.
 
-  - Go to `/admin` for the admin panel, and login with credentials from **2.4**
+    - Go to `/admin` for the admin panel, and login with credentials from **2.4**
 
-- Use `CTRL+C` to quit the running server.
+3. Use `CTRL+C` to quit the running server. To stop all containers, run:
 
-- To stop all containers, run:
+     ```bash
+     $ make exit
+     ```
 
-  ```bash
-  $ make exit
-  ```
-
-  - This command is automatically run before all Makefile run commands, so you do not need to do it unless you are using docker-compose manually.
+    - This command is automatically run before all Makefile run commands, so you do not need to do it unless you are using docker-compose manually.
 
   
 

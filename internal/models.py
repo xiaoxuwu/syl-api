@@ -11,7 +11,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
 
-class Preferences(models.Model):
+class Preference(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.ImageField(null=True)
 
@@ -20,17 +20,17 @@ class Preferences(models.Model):
 
 # create Preferences object when User is created
 @receiver(post_save, sender=User)
-def create_user_preferences(sender, instance, created, **kwargs):
+def create_user_preference(sender, instance, created, **kwargs):
     if created:
-        Preferences.objects.create(user=instance)
+        Preference.objects.create(user=instance)
 
 # update preferences when User is updated
 @receiver(post_save, sender=User)
-def save_user_preferences(sender, instance, **kwargs):
-    instance.preferences.save()
+def save_user_preference(sender, instance, **kwargs):
+    instance.preference.save()
 
 class Link(models.Model):
-    creator = models.ForeignKey(Preferences, on_delete=models.CASCADE, null=True)
+    creator = models.ForeignKey(Preference, on_delete=models.CASCADE, null=True)
     url = models.URLField()
 
     def __str__(self):

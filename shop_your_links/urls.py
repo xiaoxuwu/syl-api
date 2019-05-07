@@ -18,6 +18,12 @@ from django.contrib import admin
 from rest_framework import routers
 from rest_framework.authtoken import views as auth_views
 from internal import views
+from django.conf.urls import include as include_extra, url
+
+from django.conf import settings
+admin.site.site_header = settings.ADMIN_SITE_HEADER
+admin.site.site_title = settings.ADMIN_SITE_HEADER
+admin.site.index_title = settings.ADMIN_INDEX_TITLE
 
 router = routers.DefaultRouter()
 router.register(r'links', views.LinkViewSet, base_name='Links')
@@ -28,5 +34,7 @@ router.register(r'links', views.LinkViewSet, base_name='Links')
 urlpatterns = [
     path('api/', include(router.urls)),
     path('auth/', auth_views.obtain_auth_token),
-    path('admin/', admin.site.urls),
+    url('jet/', include_extra('jet.urls', 'jet')),  # Django JET URLS
+    url('jet/dashboard/', include_extra('jet.dashboard.urls', 'jet-dashboard')),  # Django JET dashboard URLS
+    url('admin/', admin.site.urls),
 ]
