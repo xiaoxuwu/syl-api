@@ -27,7 +27,7 @@ admin.site.index_title = settings.ADMIN_INDEX_TITLE
 
 router = routers.DefaultRouter()
 router.register(r'links', views.LinkViewSet, base_name='Links')
-
+router.register(r'events', views.EventViewSet, base_name='Events')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
