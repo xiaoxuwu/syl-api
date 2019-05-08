@@ -39,13 +39,13 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
       """
-      Given an optional user_id parameter, return events for links created by 
+      Given an optional username parameter, return events for links created by 
       the specified user. Otherwise, return all events for all users.
       """
       queryset = Event.objects.all()
-      user_id = self.request.query_params.get('user_id', None)
-      if user_id is not None:
-          queryset = queryset.filter(link__creator=user_id)
+      username = self.request.query_params.get('username', None)
+      if username is not None:
+          queryset = queryset.filter(link__creator__username=username)
       return queryset
 
     # Disable PUT/DELETE endpoints.
