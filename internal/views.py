@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework.response import Response
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from internal.models import Link, Event
 from internal.serializers import LinkSerializer, EventSerializer
@@ -28,7 +28,7 @@ class LinkViewSet(viewsets.ModelViewSet):
       if username is not None:
           queryset = queryset.filter(creator__username=username)
       return queryset
-    
+
 class EventViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows events to be viewed or edited.
@@ -49,9 +49,9 @@ class EventViewSet(viewsets.ModelViewSet):
       return queryset
 
     # Disable PUT/DELETE endpoints.
-    def update(self, request):
+    def update(self, request, pk):
       return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    def partial_update(self, request):
+    def partial_update(self, request, pk):
       return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    def destroy(self, request):
+    def destroy(self, request, pk):
       return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
