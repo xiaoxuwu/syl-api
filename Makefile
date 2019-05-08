@@ -1,14 +1,19 @@
+default: build
+
 init:
 	sudo chmod +x docker-entrypoint.sh
 build: init
 	docker-compose build
-run-dev: exit
+run-dev:
 	docker-compose up
-run-prd: exit
+	exit
+run-prd:
 	docker-compose up -d
-run-debug: exit
+run-debug:
 	docker-compose run --service-ports web
-run-sh: exit
+	exit
+run-sh:
 	docker-compose run web sh
+	exit
 exit:
 	docker-compose down
