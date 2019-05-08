@@ -120,7 +120,7 @@ class EventViewSet(viewsets.ModelViewSet):
       queryset = self.get_queryset()
       method = self.request.query_params.get('method', None)
       if method is not None and method.lower() == 'count':
-        return Response({ 'stat': 2 })
+        return Response({ 'stat': queryset.count() })
       serializer = self.serializer_class(queryset, many=True)
       return Response(serializer.data)
 
