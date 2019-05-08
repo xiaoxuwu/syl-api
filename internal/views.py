@@ -3,10 +3,10 @@ from django.utils import timezone, dateformat
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from internal.models import Link, Event
 from internal.serializers import LinkSerializer, EventSerializer
-from internal.permissions import IsLinkCreator
+from internal.permissions import IsLinkCreator, HasEventPermission
 from datetime import datetime, timedelta
 import pdb
 
@@ -34,6 +34,7 @@ class EventViewSet(viewsets.ModelViewSet):
     """
     queryset = Event.objects.all()
     serializer_class = EventSerializer
+    permission_classes = (AllowAny, HasEventPermission)
     # TODO(TrinaKat): custom permissions
     # TODO(TrinaKat): test all this date filtering
 
