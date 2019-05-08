@@ -4,15 +4,15 @@ init:
 	sudo chmod +x docker-entrypoint.sh
 build: init
 	docker-compose build
-run-dev:
+run-dev: build
 	docker-compose up
 	exit
-run-prd:
+run-prd: build
 	docker-compose up -d
-run-debug:
+run-debug: build
 	docker-compose run --service-ports web
 	exit
-run-sh:
+run-sh: build
 	docker-compose run web sh
 	exit
 exit:

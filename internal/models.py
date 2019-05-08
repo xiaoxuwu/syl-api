@@ -30,7 +30,7 @@ def save_user_preference(sender, instance, **kwargs):
     instance.preference.save()
 
 class Link(models.Model):
-    creator = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
     url = models.URLField()
 
     def __str__(self):
