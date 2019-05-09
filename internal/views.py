@@ -1,11 +1,7 @@
 from django.contrib.auth.models import User, Group
-from django.contrib.postgres.aggregates import ArrayAgg, JSONBAgg
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
 from django.utils import timezone, dateformat
-from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear, Concat
-from django.db.models import Count, F, ExpressionWrapper, Subquery, Expression, CharField, Value
-from django.contrib.postgres.fields import JSONField
-from django.forms.models import model_to_dict
-from django.core import serializers
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -137,6 +133,7 @@ class EventViewSet(viewsets.ModelViewSet):
       Given a method parameter, returns event data in the specified format. Can
       return 'count' statistics or the original Event data.
       TODO: figure out return format
+      TODO: restrict date range for daily/weekly/monthly/yearly data?
       TODO: stats by device type, geographic region, time of day/week
       """
       output = []
