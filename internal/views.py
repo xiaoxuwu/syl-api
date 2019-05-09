@@ -8,6 +8,7 @@ from internal.models import Link, Event
 from internal.serializers import LinkSerializer, EventSerializer
 from internal.permissions import IsLinkCreator, HasEventPermission
 from datetime import datetime, timedelta
+from dateutil import parser
 import pdb
 
 class LinkViewSet(viewsets.ModelViewSet):
@@ -35,7 +36,6 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = (AllowAny, HasEventPermission)
-    # TODO(TrinaKat): custom permissions
     # TODO(TrinaKat): test all this date filtering
 
     def filter_by_date_range(self, queryset):
@@ -46,14 +46,14 @@ class EventViewSet(viewsets.ModelViewSet):
       start = self.request.query_params.get('start', None)
       try:
         if start is not None:
-          start = datetime.strptime(start, '%Y-%m-%d')
+          start = parser.parse(start)
       except:
         start = None
 
       end = self.request.query_params.get('end', None)
       try:
         if end is not None:
-          end = datetime.strptime(end, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
+          end = parser.parse(end).replace(hour=23, minute=59, second=59)
       except:
         end = None
 
@@ -113,8 +113,8 @@ class EventViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='stats', name='Event Stats')
     def get_event_stats(self, request):
       """
-      Given a method parameter, returns event data in the specified format. The
-      default is in Event form.
+      Given a method parameter, returns event data in the specified format. Can
+      return 'count' statistics or the original Event data.
       TODO: stats by device type, geographic region, time of day/week
       """
       queryset = self.get_queryset()
@@ -123,6 +123,28 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response({ 'stat': queryset.count() })
       serializer = self.serializer_class(queryset, many=True)
       return Response(serializer.data)
+
+    def create(self, request):
+      """
+      Creates an event for the specified link_id. Admins may specify a time
+      parameter.
+      """
+      link_id = self.request.POST.get('link', None)
+      time = self.request.POST.get('time', None)
+      try:
+        if time is not None:
+          time = parser.parse(time)
+      except:
+        time = None
+
+      if link_id is not None:
+        event = Event.objects.create(link_id=link_id)
+        if request.user.is_superuser and time is not None:
+          event = Event.objects.create(link_id=link_id, time=time)
+        event.save()
+        serializer = EventSerializer(event)
+        return Response(serializer.data)
+      return Response(status=status.HTTP_400_BAD_REQUEST)
 
     # Disable PUT/DELETE endpoints.
     def update(self, request, pk=None):
