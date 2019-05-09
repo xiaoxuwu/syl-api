@@ -4,7 +4,7 @@ from rest_framework import viewsets, mixins
 from internal.models import Link, Preference
 from internal.serializers import LinkSerializer, PreferenceSerializer, UserSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-from internal.permissions import IsLinkCreator, IsPreferenceUser, IsUser
+from internal.permissions import IsOwner
 from rest_framework.response import Response
 import pdb
 
@@ -13,18 +13,18 @@ class LinkViewSet(viewsets.ModelViewSet):
     API endpoint that allows links to be viewed or edited.
     """
     serializer_class = LinkSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsLinkCreator)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwner)
 
     def get_queryset(self):
-      """
-      Given a username parameter, returns only the links that the
-      specified user created
-      """
-      queryset = Link.objects.all()
-      username = self.request.query_params.get('username', None)
-      if username is not None:
-          queryset = queryset.filter(creator__username=username)
-      return queryset
+        """
+        Given a username parameter, returns only the links that the
+        specified user created
+        """
+        queryset = Link.objects.all()
+        username = self.request.query_params.get('username', None)
+        if username is not None:
+            queryset = queryset.filter(creator__username=username)
+        return queryset
 
 class PreferenceViewSet(mixins.ListModelMixin,
                         mixins.UpdateModelMixin,
@@ -34,7 +34,7 @@ class PreferenceViewSet(mixins.ListModelMixin,
     """
     queryset = Preference.objects.all()
     serializer_class = PreferenceSerializer
-    permission_classes = (IsAuthenticated, IsPreferenceUser)
+    permission_classes = (IsAuthenticated, IsOwner)
 
     def list(self, request):
         """
@@ -52,7 +52,7 @@ class UserViewSet(mixins.ListModelMixin,
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAuthenticated, IsUser)
+    permission_classes = (IsAuthenticated, IsOwner)
 
     def list(self, request):
         """

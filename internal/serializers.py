@@ -10,7 +10,7 @@ class LinkSerializer(serializers.ModelSerializer):
 class PreferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Preference
-        fields = ('id', 'image')
+        fields = ('id', 'background_img', 'profile_img', 'media_prefix')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
