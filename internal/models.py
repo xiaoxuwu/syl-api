@@ -38,7 +38,6 @@ class Link(models.Model):
         return self.url
 
 class Event(models.Model):
-    
     link = models.ForeignKey(Link, on_delete=models.CASCADE)
     time = models.DateTimeField(default=now)
 
