@@ -6,7 +6,18 @@ from internal.serializers import LinkSerializer, PreferenceSerializer, UserSeria
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from internal.permissions import IsOwner
 from rest_framework.response import Response
+from django.http import JsonResponse
 import pdb
+
+def error_404(request, *args, **argv):
+    return JsonResponse({
+        'details': 'invalid URL - check OPTION /api'
+    }, status=404)
+
+def error_500(request, *args, **argv):
+    return JsonResponse({
+        'details': 'server failure'
+    }, status=500)
 
 class LinkViewSet(viewsets.ModelViewSet):
     """
