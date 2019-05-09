@@ -1,15 +1,22 @@
 from rest_framework import permissions
-from internal.models import Link
 import pdb
 
-class IsLinkCreator(permissions.BasePermission):
+class IsOwner(permissions.BasePermission):
     """
-    Custom permission to only allow creators of the links to have write access
-    for their own links
+    Custom permission to only allow owners/creators of a resource
+    to have appropriate access
     """
 
     def has_object_permission(self, request, view, obj):
         # Super user can always access
-        if request.user.is_superuser or request.method in permissions.SAFE_METHODS:
+        if request.user.is_superuser:
             return True
-        return request.user == obj.creator
+        if view.basename == 'Links' and request.method in permissions.SAFE_METHODS:
+            return True
+        if view.basename == 'Links':
+            owner = obj.creator
+        elif view.basename == 'Preferences':
+            owner = obj.user
+        elif view.basename == 'Users':
+            owner = obj
+        return request.user == owner

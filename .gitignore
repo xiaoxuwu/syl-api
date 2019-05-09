@@ -125,3 +125,4 @@ dmypy.json
 
 # Project-specific folders
 staticfiles/
+shop_your_links/media/

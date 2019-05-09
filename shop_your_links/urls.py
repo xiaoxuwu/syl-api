@@ -19,15 +19,25 @@ from rest_framework import routers
 from rest_framework.authtoken import views as auth_views
 from internal import views
 from django.conf.urls import include as include_extra, url
+from django.conf.urls import handler404, handler500
+import internal
 
 from django.conf import settings
+
+# Admin settings
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.site_title = settings.ADMIN_SITE_HEADER
 admin.site.index_title = settings.ADMIN_INDEX_TITLE
 
+# Custom 404
+handler404 = internal.views.error_404
+handler500 = internal.views.error_500
+
+# API routes
 router = routers.DefaultRouter()
 router.register(r'links', views.LinkViewSet, base_name='Links')
-
+router.register(r'preferences', views.PreferenceViewSet, base_name='Preferences')
+router.register(r'users', views.UserViewSet, base_name='Users')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
