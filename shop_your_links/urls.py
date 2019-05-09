@@ -27,6 +27,8 @@ admin.site.index_title = settings.ADMIN_INDEX_TITLE
 
 router = routers.DefaultRouter()
 router.register(r'links', views.LinkViewSet, base_name='Links')
+router.register(r'preferences', views.PreferenceViewSet, base_name='Preferences')
+router.register(r'users', views.UserViewSet, base_name='Users')
 
 
 # Wire up our API using automatic URL routing.

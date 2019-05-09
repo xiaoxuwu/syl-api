@@ -1,10 +1,11 @@
 from django.contrib.auth.models import User, Group
 from rest_framework.response import Response
-from rest_framework import viewsets
-from internal.models import Link
-from internal.serializers import LinkSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from internal.permissions import IsLinkCreator
+from rest_framework import viewsets, mixins
+from internal.models import Link, Preference
+from internal.serializers import LinkSerializer, PreferenceSerializer, UserSerializer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from internal.permissions import IsLinkCreator, IsPreferenceUser, IsUser
+from rest_framework.response import Response
 import pdb
 
 class LinkViewSet(viewsets.ModelViewSet):
@@ -24,3 +25,38 @@ class LinkViewSet(viewsets.ModelViewSet):
       if username is not None:
           queryset = queryset.filter(creator__username=username)
       return queryset
+
+class PreferenceViewSet(mixins.ListModelMixin,
+                        mixins.UpdateModelMixin,
+                        viewsets.GenericViewSet):
+    """
+    API endpoint that allows preferences to be viewed or edited.
+    """
+    queryset = Preference.objects.all()
+    serializer_class = PreferenceSerializer
+    permission_classes = (IsAuthenticated, IsPreferenceUser)
+
+    def list(self, request):
+        """
+        Returns user's preferences
+        """
+        queryset = Preference.objects.get(user=request.user)
+        serializer = PreferenceSerializer(queryset)
+        return Response(serializer.data)
+
+class UserViewSet(mixins.ListModelMixin,
+                  mixins.UpdateModelMixin,
+                  viewsets.GenericViewSet):
+    """
+    API endpoint that allows users to update name and email.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated, IsUser)
+
+    def list(self, request):
+        """
+        Returns user's info
+        """
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
