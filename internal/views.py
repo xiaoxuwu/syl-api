@@ -1,7 +1,11 @@
 from django.contrib.auth.models import User, Group
+from django.contrib.postgres.aggregates import ArrayAgg, JSONBAgg
 from django.utils import timezone, dateformat
-from django.db.models.functions import TruncMonth
-from django.db.models import Count
+from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear, Concat
+from django.db.models import Count, F, ExpressionWrapper, Subquery, Expression, CharField, Value
+from django.contrib.postgres.fields import JSONField
+from django.forms.models import model_to_dict
+from django.core import serializers
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -105,9 +109,10 @@ class EventViewSet(viewsets.ModelViewSet):
         }.get(time, self.filter_by_date_range(queryset))
       return self.filter_by_date_range(queryset)
 
-    def get_queryset(self):
+    def filter_by_id(self):
       """
-      Given optional filtering parameters, return any corresponding events.
+      Given an optional link or username parameter, return events for the
+      specified link(s).
       """
       queryset = Event.objects.all()
       link_id = self.request.query_params.get('link', None)
@@ -116,7 +121,13 @@ class EventViewSet(viewsets.ModelViewSet):
         queryset = queryset.filter(link=link_id)
       elif username is not None:
         queryset = queryset.filter(link__creator__username=username)
+      return queryset
 
+    def get_queryset(self):
+      """
+      Given optional filtering parameters, return any corresponding events.
+      """
+      queryset = self.filter_by_id()
       queryset = self.filter_by_time(queryset)
       return queryset
 
@@ -125,14 +136,64 @@ class EventViewSet(viewsets.ModelViewSet):
       """
       Given a method parameter, returns event data in the specified format. Can
       return 'count' statistics or the original Event data.
+      TODO: figure out return format
       TODO: stats by device type, geographic region, time of day/week
       """
-      queryset = self.get_queryset()
+      output = []
+      queryset = self.filter_by_id()
+      time = self.request.query_params.get('time', None)
       method = self.request.query_params.get('method', None)
-      if method is not None and method.lower() == 'count':
-        return Response({ 'stat': queryset.count() })
-      serializer = self.serializer_class(queryset, many=True)
-      return Response(serializer.data)
+      if time is None:
+        queryset = self.filter_by_date_range(queryset)
+        if method is not None and method.lower() == 'count':
+          return Response({ 'count': queryset.count() })
+        serializer = self.serializer_class(queryset, many=True)
+        output = serializer.data
+      else:
+        time = time.lower()
+        if time in ['daily', 'weekly', 'monthly', 'yearly']:
+          queryset = {
+            'daily': queryset.annotate(period=TruncDay('time')),
+            'weekly': queryset.annotate(period=TruncWeek('time')),
+            'monthly': queryset.annotate(period=TruncMonth('time')),
+            'yearly': queryset.annotate(period=TruncYear('time')),
+          }.get(time).order_by('period')
+
+          # TODO: there is probably a better way to do this query
+          # Do we even want this query
+
+          # Creates Event model from data cols
+          # queryset = queryset \
+          #           .values('period') \
+          #           .annotate(ids=ArrayAgg('id'), links=ArrayAgg('link'), times=ArrayAgg('time')) \
+          #           .values('period', 'ids', 'links', 'times')
+          # for q in queryset:
+          #   data = list(EventSerializer(Event(id=id, link_id=link, time=time), many=False).data \
+          #     for id, link, time in zip(q['ids'], q['links'], q['times']))
+          #   output.append({ 'period': q['period'], 'count': len(data), 'events': data})
+
+          # Fetches Event entry by primary key
+          queryset = queryset \
+                    .values('period') \
+                    .annotate(event_ids=ArrayAgg('id')) \
+                    .values('period', 'event_ids')
+          for q in queryset:
+            data = list(EventSerializer(Event.objects.get(pk=id), many=False).data for id in q['event_ids'])
+            output.append({ 'period': q['period'], 'count': len(data), 'events': data })
+
+          # Just returns array of timestamps per period
+          # output = queryset \
+          #         .values('period') \
+          #         .annotate(times=ArrayAgg('time')) \
+          #         .values('period', 'times')
+        else:
+          queryset = self.filter_by_time(queryset)
+          if method is not None and method.lower() == 'count':
+            return Response({ 'count': queryset.count() })
+          serializer = self.serializer_class(queryset, many=True)
+          output = serializer.data
+
+      return Response(output)
 
     def create(self, request):
       """
