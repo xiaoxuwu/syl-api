@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User, Group
 from django.utils import timezone, dateformat
+from django.db.models.functions import TruncMonth
+from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -74,6 +76,7 @@ class EventViewSet(viewsets.ModelViewSet):
       # or we could do both
       # for data visualization, would want the latter options
       # for user/influencer benefits, they may want the former options
+      # I'll just do both and y'all can decide when u review if we hate this
       """
       Given an optional time parameter, return events in the specified time
       period.
@@ -82,16 +85,23 @@ class EventViewSet(viewsets.ModelViewSet):
       date = today.date()
       month = dateformat.format(today, 'm')
       year = dateformat.format(today, 'Y')
-      last_week = today.date() - timedelta(days=7)
-      time = self.request.query_params.get('time', None)
+      last_monday = today - timedelta(days=today.weekday())
+      this_monday = today + timedelta(days=-today.weekday(), weeks=1)
+      last_7_days = today.date() - timedelta(days=7)
+      last_30_days = today.date() - timedelta(days=30)
+      last_90_days = today.date() - timedelta(days=90)
 
+      time = self.request.query_params.get('time', None)
       if time is not None:
         time = time.lower()
         return {
           'latest': queryset.order_by('-time')[:1],
           'today': queryset.filter(time__date=date),
-          'week': queryset.filter(time__range=[last_week, today]),
-          'month': queryset.filter(time__year=year, time__month=month)
+          'week': queryset.filter(time__range=[last_monday, this_monday]),
+          'month': queryset.filter(time__year=year, time__month=month),
+          '7days': queryset.filter(time__range=[last_7_days, today]),
+          '30days': queryset.filter(time__range=[last_30_days, today]),
+          '90days': queryset.filter(time__range=[last_90_days, today]),
         }.get(time, self.filter_by_date_range(queryset))
       return self.filter_by_date_range(queryset)
 
