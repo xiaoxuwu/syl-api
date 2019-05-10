@@ -1,26 +1,17 @@
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
+from django.http import JsonResponse
 from django.utils import timezone, dateformat
+from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
-<<<<<<< HEAD
-from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
-from internal.models import Link, Event
-from internal.serializers import LinkSerializer, EventSerializer
-from internal.permissions import IsLinkCreator, HasEventPermission
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from internal.models import Link, Event, Preference
+from internal.permissions import IsOwner, HasEventPermission
+from internal.serializers import LinkSerializer, EventSerializer, PreferenceSerializer, UserSerializer
 from datetime import datetime, timedelta
 from dateutil import parser
-=======
-from rest_framework import viewsets, mixins
-from internal.models import Link, Preference
-from internal.serializers import LinkSerializer, PreferenceSerializer, UserSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-from internal.permissions import IsOwner
-from rest_framework.response import Response
-from django.http import JsonResponse
->>>>>>> master
 import pdb
 
 def error_404(request, *args, **argv):

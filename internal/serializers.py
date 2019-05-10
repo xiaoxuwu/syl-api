@@ -1,10 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-<<<<<<< HEAD
-from internal.models import Link, Event
-=======
-from internal.models import Link, Preference
->>>>>>> master
+from internal.models import Link, Event, Preference
 
 class LinkSerializer(serializers.ModelSerializer):
     class Meta:
