@@ -1,6 +1,10 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
+<<<<<<< HEAD
 from internal.models import Link, Event
+=======
+from internal.models import Link, Preference
+>>>>>>> master
 
 class LinkSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,3 +16,13 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ("id", "link", "time")
+
+class PreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Preference
+        fields = ('id', 'background_img', 'profile_img', 'media_prefix')
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'first_name', 'last_name', 'email')

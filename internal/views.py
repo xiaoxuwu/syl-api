@@ -3,6 +3,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
 from django.utils import timezone, dateformat
 from rest_framework.response import Response
+<<<<<<< HEAD
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
@@ -11,14 +12,33 @@ from internal.serializers import LinkSerializer, EventSerializer
 from internal.permissions import IsLinkCreator, HasEventPermission
 from datetime import datetime, timedelta
 from dateutil import parser
+=======
+from rest_framework import viewsets, mixins
+from internal.models import Link, Preference
+from internal.serializers import LinkSerializer, PreferenceSerializer, UserSerializer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from internal.permissions import IsOwner
+from rest_framework.response import Response
+from django.http import JsonResponse
+>>>>>>> master
 import pdb
+
+def error_404(request, *args, **argv):
+    return JsonResponse({
+        'details': 'invalid URL - check OPTION /api'
+    }, status=404)
+
+def error_500(request, *args, **argv):
+    return JsonResponse({
+        'details': 'server failure'
+    }, status=500)
 
 class LinkViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows links to be viewed or edited.
     """
     serializer_class = LinkSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsLinkCreator)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwner)
 
     def get_queryset(self):
       """
@@ -221,3 +241,38 @@ class EventViewSet(viewsets.ModelViewSet):
       return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     def destroy(self, request, pk=None):
       return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+class PreferenceViewSet(mixins.ListModelMixin,
+                        mixins.UpdateModelMixin,
+                        viewsets.GenericViewSet):
+    """
+    API endpoint that allows preferences to be viewed or edited.
+    """
+    queryset = Preference.objects.all()
+    serializer_class = PreferenceSerializer
+    permission_classes = (IsAuthenticated, IsOwner)
+
+    def list(self, request):
+        """
+        Returns user's preferences
+        """
+        queryset = Preference.objects.get(user=request.user)
+        serializer = PreferenceSerializer(queryset)
+        return Response(serializer.data)
+
+class UserViewSet(mixins.ListModelMixin,
+                  mixins.UpdateModelMixin,
+                  viewsets.GenericViewSet):
+    """
+    API endpoint that allows users to update name and email.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated, IsOwner)
+
+    def list(self, request):
+        """
+        Returns user's info
+        """
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)

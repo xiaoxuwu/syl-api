@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.utils.timezone import now
+import pdb
 
 # automatically generate token for every new user
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -14,7 +15,12 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class Preference(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    image = models.ImageField(null=True)
+    background_img = models.ImageField(null=True)
+    profile_img = models.ImageField(null=True)
+
+    @property
+    def media_prefix(self):
+        return settings.MEDIA_PREFIX
 
     def __str__(self):
         return self.user.username

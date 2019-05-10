@@ -1,17 +1,33 @@
 from rest_framework import permissions
-from internal.models import User, Link, Event
+from internal.models import User, Link
 import pdb
 
-class IsLinkCreator(permissions.BasePermission):
+class IsOwner(permissions.BasePermission):
     """
-    Custom permission to only allow creators of the links to have write access
-    for their own links
+    Custom permission to only allow owners/creators of a resource
+    to have appropriate access
     """
     def has_object_permission(self, request, view, obj):
         # Super user can always access
-        if request.user.is_superuser or request.method in permissions.SAFE_METHODS:
+        if request.user.is_superuser:
             return True
-        return request.user == obj.creator
+
+        # Links allows public read access
+        if view.basename == 'Links' and request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Events allows read access for objects owners only
+        if view.basename == 'Events' and request.method in permissions.SAFE_METHODS and request.user == obj.link.creator:
+            return True
+
+        # Other views allow owners read/write object permissions
+        if view.basename == 'Links':
+            owner = obj.creator
+        elif view.basename == 'Preferences':
+            owner = obj.user
+        elif view.basename == 'Users':
+            owner = obj
+        return request.user == owner
 
 class HasEventPermission(permissions.BasePermission):
     """
@@ -48,13 +64,3 @@ class HasEventPermission(permissions.BasePermission):
           return True
 
       return False
-
-    def has_object_permission(self, request, view, obj):
-      """
-      Applies object-level permissions. Admins have full read and write access 
-      while Link owners just have GET/read permissions. Operations for a
-      particular object instance are not public.
-      """
-      if request.user.is_superuser:
-        return True
-      return request.method in permissions.SAFE_METHODS and request.user == obj.link.creator
