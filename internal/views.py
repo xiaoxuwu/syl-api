@@ -49,7 +49,13 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = (AllowAny, HasEventPermission)
-    # TODO(TrinaKat): test all this date filtering
+    
+    def parse_date(self, date):
+      try:
+        if date is not None:
+          return parser.parse(date)
+      except:
+        return None
 
     def filter_by_date_range(self, queryset):
       """
@@ -57,18 +63,9 @@ class EventViewSet(viewsets.ModelViewSet):
       custom time period.
       """
       start = self.request.query_params.get('start', None)
-      try:
-        if start is not None:
-          start = parser.parse(start)
-      except:
-        start = None
-
+      start = self.parse_date(start)
       end = self.request.query_params.get('end', None)
-      try:
-        if end is not None:
-          end = parser.parse(end).replace(hour=23, minute=59, second=59)
-      except:
-        end = None
+      end = self.parse_date(end).replace(hour=23, minute=59, second=59)
 
       if start is not None or end is not None:
         if start is not None and end is not None:
@@ -77,7 +74,6 @@ class EventViewSet(viewsets.ModelViewSet):
           queryset = queryset.filter(time__gte=start)
         else:
           queryset = queryset.filter(time__lte=end)
-
       return queryset
 
     def filter_by_month(self, queryset):
