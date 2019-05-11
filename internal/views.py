@@ -57,6 +57,13 @@ class EventViewSet(viewsets.ModelViewSet):
       except:
         return None
 
+    def parse_int(self, num):
+      try:
+        if num is not None:
+          return int(num)
+      except:
+        return None
+
     def filter_by_date_range(self, queryset):
       """
       Given optional start/end parameters, returns events in the specified 
@@ -82,43 +89,23 @@ class EventViewSet(viewsets.ModelViewSet):
       month/year. Year defaults to current year.
       """
       month_str = self.request.query_params.get('month', None)
-      month_int = None
-      try:
-        if month_str is not None:
-          month_int = int(month_str)
-      except:
-        month_int = None
-
+      month_int = self.parse_int(month_str)
       year_str = self.request.query_params.get('year', None)
-      year_int = None
+      year_int = self.parse_int(year_str)
       curr_year_str = dateformat.format(timezone.now(), 'Y')
-      curr_year_int = None
-      try:
-        if year_str is not None:
-          year_int = int(year_str)
-          curr_year_int = int(curr_year_str)
-      except:
-        year_int = None
-        curr_year_int = None
+      curr_year_int = self.parse_int(curr_year_str)
 
-      if month_int is not None and 1 <= month_int <= 12:
-        if year_str is None or year_int is None or curr_year_int is None or year_int < 1999 or year_int > curr_year_int:
-          year_str = curr_year_str
-        return queryset.filter(time__year=year_str, time__month=month_str)
-      
+      if month_str is not None and 1 <= month_int <= 12:
+        if year_str is not None and 1999 <= year_int <= curr_year_int:
+          return queryset.filter(time__year=year_str, time__month=month_str)
+        elif curr_year_str is not None:
+          return queryset.filter(time__year=curr_year_str, time__month=month_str)
       return self.filter_by_date_range(queryset)
 
     def filter_by_time(self, queryset):
-      # TODO: @reviewer(s) do we want to specify date ranges like:
-      # week = from 7 days before today, OR monday to monday
-      # month = from 30 days before today, OR month of may
-      # or we could do both
-      # for data visualization, would want the latter options
-      # for user/influencer benefits, they may want the former options
-      # I'll just do both and y'all can decide when u review if we hate this
       """
       Given an optional time parameter, return events in the specified time
-      period.
+      period. Offers week and 7days option to facilitate frontend visualization.
       """
       today = timezone.now()
       date = today.date()
