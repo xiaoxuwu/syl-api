@@ -185,6 +185,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
           # TODO: there is probably a better way to do this query
           # Do we even want this query
+          # Leaving these options here for reviewers to weigh in
 
           # Creates Event model from data cols
           # queryset = queryset \
@@ -226,11 +227,7 @@ class EventViewSet(viewsets.ModelViewSet):
       """
       link_id = self.request.POST.get('link', None)
       time = self.request.POST.get('time', None)
-      try:
-        if time is not None:
-          time = parser.parse(time)
-      except:
-        time = None
+      time = self.parse_date(time)
 
       if link_id is not None:
         event = Event.objects.create(link_id=link_id)
