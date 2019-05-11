@@ -53,7 +53,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def filter_by_date_range(self, queryset):
       """
-      Given optional start/end parameters, returns events in the specified
+      Given optional start/end parameters, returns events in the specified 
       custom time period.
       """
       start = self.request.query_params.get('start', None)
@@ -79,6 +79,38 @@ class EventViewSet(viewsets.ModelViewSet):
           queryset = queryset.filter(time__lte=end)
 
       return queryset
+
+    def filter_by_month(self, queryset):
+      """
+      Given optional month/year parameters, returns events in the specified
+      month/year. Year defaults to current year.
+      """
+      month_str = self.request.query_params.get('month', None)
+      month_int = None
+      try:
+        if month_str is not None:
+          month_int = int(month_str)
+      except:
+        month_int = None
+
+      year_str = self.request.query_params.get('year', None)
+      year_int = None
+      curr_year_str = dateformat.format(timezone.now(), 'Y')
+      curr_year_int = None
+      try:
+        if year_str is not None:
+          year_int = int(year_str)
+          curr_year_int = int(curr_year_str)
+      except:
+        year_int = None
+        curr_year_int = None
+
+      if month_int is not None and 1 <= month_int <= 12:
+        if year_str is None or year_int is None or curr_year_int is None or year_int < 1999 or year_int > curr_year_int:
+          year_str = curr_year_str
+        return queryset.filter(time__year=year_str, time__month=month_str)
+      
+      return self.filter_by_date_range(queryset)
 
     def filter_by_time(self, queryset):
       # TODO: @reviewer(s) do we want to specify date ranges like:
@@ -113,13 +145,14 @@ class EventViewSet(viewsets.ModelViewSet):
           '7days': queryset.filter(time__range=[last_7_days, today]),
           '30days': queryset.filter(time__range=[last_30_days, today]),
           '90days': queryset.filter(time__range=[last_90_days, today]),
-        }.get(time, self.filter_by_date_range(queryset))
-      return self.filter_by_date_range(queryset)
+        }.get(time, self.filter_by_month(queryset))
+      return self.filter_by_month(queryset)
 
     def filter_by_id(self):
       """
       Given an optional link or username parameter, return events for the
       specified link(s).
+      TODO: if no link_id/user is found, default filter with username=request.username?
       """
       queryset = Event.objects.all()
       link_id = self.request.query_params.get('link', None)
@@ -152,7 +185,7 @@ class EventViewSet(viewsets.ModelViewSet):
       time = self.request.query_params.get('time', None)
       method = self.request.query_params.get('method', None)
       if time is None:
-        queryset = self.filter_by_date_range(queryset)
+        queryset = self.filter_by_month(queryset)
         if method is not None and method.lower() == 'count':
           return Response({ 'count': queryset.count() })
         serializer = self.serializer_class(queryset, many=True)
