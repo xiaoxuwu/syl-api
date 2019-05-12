@@ -45,9 +45,11 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'django_cleanup',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -79,6 +81,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'shop_your_links.wsgi.application'
 
+# https://github.com/ottoyiu/django-cors-headers
+# CORS_ORIGIN_ALLOW_ALL = True   
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:3000",
+]
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
