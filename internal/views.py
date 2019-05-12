@@ -167,16 +167,14 @@ class EventViewSet(viewsets.ModelViewSet):
         queryset = self.filter_by_id()
         time = self.request.query_params.get('time', None)
         method = self.request.query_params.get('method', None)
-        if time is None:
-            queryset = self.filter_by_month(queryset)
-            if method is not None and method.lower() == 'count':
-                return Response({ 'count': queryset.count() })
-            serializer = self.serializer_class(queryset, many=True)
-            return Response(serializer.data)
+        if time is not None:
+            time = time.lower()
 
-        time = time.lower()
         if time not in ['daily', 'weekly', 'monthly', 'yearly']:
-            queryset = self.filter_by_time(queryset)
+            if time is None:
+                queryset = self.filter_by_month(queryset)
+            else:
+                queryset = self.filter_by_time(queryset)
             if method is not None and method.lower() == 'count':
                 return Response({ 'count': queryset.count() })
             serializer = self.serializer_class(queryset, many=True)
