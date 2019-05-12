@@ -48,7 +48,7 @@ class EventViewSet(viewsets.ModelViewSet):
     """
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    permission_classes = (AllowAny, HasEventPermission)
+    permission_classes = (AllowAny, IsOwner, HasEventPermission)
     
     def parse_date(self, date):
         try:
