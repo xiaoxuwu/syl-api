@@ -136,16 +136,17 @@ class EventViewSet(viewsets.ModelViewSet):
     def filter_by_id(self):
         """
         Given an optional link or username parameter, return events for the
-        specified link(s).
-        TODO: if no link_id/user is found, default filter with username=request.username?
+        specified link(s). If not superuser, only returns events for user.
         """
         queryset = Event.objects.all()
         link_id = self.request.query_params.get('link', None)
         username = self.request.query_params.get('username', None)
         if link_id is not None:
             return queryset.filter(link=link_id)
-        elif username is not None:
+        elif self.request.user.is_superuser and username is not None:
             return queryset.filter(link__creator__username=username)
+        elif not self.request.user.is_superuser:
+            return queryset.filter(link__creator=self.request.user)
         return queryset
 
     def get_queryset(self):
