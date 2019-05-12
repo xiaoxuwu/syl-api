@@ -72,15 +72,17 @@ class EventViewSet(viewsets.ModelViewSet):
         start = self.request.query_params.get('start', None)
         start = self.parse_date(start)
         end = self.request.query_params.get('end', None)
-        end = self.parse_date(end).replace(hour=23, minute=59, second=59)
+        end = self.parse_date(end)
+        if end is not None:
+            end = end.replace(hour=23, minute=59, second=59)
 
         if start is not None or end is not None:
             if start is not None and end is not None:
-                queryset = queryset.filter(time__range=[start, end])
+                return queryset.filter(time__range=[start, end])
             elif start:
-                queryset = queryset.filter(time__gte=start)
+                return queryset.filter(time__gte=start)
             else:
-                queryset = queryset.filter(time__lte=end)
+                return queryset.filter(time__lte=end)
         return queryset
 
     def filter_by_month(self, queryset):
@@ -141,9 +143,9 @@ class EventViewSet(viewsets.ModelViewSet):
         link_id = self.request.query_params.get('link', None)
         username = self.request.query_params.get('username', None)
         if link_id is not None:
-            queryset = queryset.filter(link=link_id)
+            return queryset.filter(link=link_id)
         elif username is not None:
-            queryset = queryset.filter(link__creator__username=username)
+            return queryset.filter(link__creator__username=username)
         return queryset
 
     def get_queryset(self):
