@@ -57,6 +57,8 @@ class HasEventPermission(permissions.BasePermission):
                 link = None
             if link is not None and request.user == link.creator:
                 return True
+            elif link is not None:
+                return False
 
         # Otherwise API handles restricting events to that of authenticated user
         return request.user.is_authenticated
