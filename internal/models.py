@@ -39,12 +39,12 @@ def save_user_preference(sender, instance, **kwargs):
 class Link(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     url = models.URLField()
+    text = models.CharField(max_length=200, blank=True, default=None)
 
     def __str__(self):
         return self.url
 
 class Event(models.Model):
-    
     link = models.ForeignKey(Link, on_delete=models.CASCADE)
     time = models.DateTimeField(default=now)
 
