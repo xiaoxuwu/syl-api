@@ -21,6 +21,7 @@ class IsOwner(permissions.BasePermission):
             return True
 
         # Other views allow owners read/write object permissions
+        owner = None
         if view.basename == 'Links':
             owner = obj.creator
         elif view.basename == 'Preferences':
