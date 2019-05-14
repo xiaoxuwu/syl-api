@@ -85,7 +85,7 @@ class EventViewSet(viewsets.ModelViewSet):
                 return queryset.filter(time__lte=end)
         return queryset
 
-    def filter_by_month(self, queryset):
+    def filter_by_month_or_year(self, queryset):
         """
         Given optional month/year parameters, returns events in the specified
         month/year. Year defaults to current year.
