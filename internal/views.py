@@ -135,7 +135,7 @@ class EventViewSet(viewsets.ModelViewSet):
             }.get(time, self.filter_by_month_or_year(queryset))
         return self.filter_by_month_or_year(queryset)
 
-    def filter_by_id(self):
+    def filter_by_link_or_user(self):
         """
         Given an optional link or username parameter, return events for the
         specified link(s). If not superuser, only returns events for user.
@@ -155,7 +155,7 @@ class EventViewSet(viewsets.ModelViewSet):
         """
         Given optional filtering parameters, return any corresponding events.
         """
-        queryset = self.filter_by_id()
+        queryset = self.filter_by_link_or_user()
         queryset = self.filter_by_time(queryset)
         return queryset
 
@@ -169,7 +169,7 @@ class EventViewSet(viewsets.ModelViewSet):
         TODO: stats by device type, geographic region, time of day/week
         """
         output = []
-        queryset = self.filter_by_id()
+        queryset = self.filter_by_link_or_user()
         time = self.request.query_params.get('time', None)
         method = self.request.query_params.get('method', None)
         if time is not None:
