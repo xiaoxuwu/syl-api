@@ -132,8 +132,8 @@ class EventViewSet(viewsets.ModelViewSet):
                 '7days': queryset.filter(time__range=[last_7_days, today]),
                 '30days': queryset.filter(time__range=[last_30_days, today]),
                 '90days': queryset.filter(time__range=[last_90_days, today]),
-            }.get(time, self.filter_by_month(queryset))
-        return self.filter_by_month(queryset)
+            }.get(time, self.filter_by_month_or_year(queryset))
+        return self.filter_by_month_or_year(queryset)
 
     def filter_by_id(self):
         """
@@ -177,7 +177,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
         if time not in ['daily', 'weekly', 'monthly', 'yearly']:
             if time is None:
-                queryset = self.filter_by_month(queryset)
+                queryset = self.filter_by_month_or_year(queryset)
             else:
                 queryset = self.filter_by_time(queryset)
             if method is not None and method.lower() == 'count':
