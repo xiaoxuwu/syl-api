@@ -41,6 +41,7 @@ class Link(models.Model):
     url = models.URLField()
     text = models.CharField(max_length=200, blank=True, default=None)
     image = models.ImageField(blank=True, default=None, null=True)
+    order = models.PositiveSmallIntegerField(unique=True, null=True)
 
     def __str__(self):
         return self.url
