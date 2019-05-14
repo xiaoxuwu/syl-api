@@ -102,6 +102,8 @@ class EventViewSet(viewsets.ModelViewSet):
                 return queryset.filter(time__year=year_str, time__month=month_str)
             elif curr_year_str is not None:
                 return queryset.filter(time__year=curr_year_str, time__month=month_str)
+        elif year_str is not None and 1999 <= year_int <= curr_year_int:
+            return queryset.filter(time__year=year_str)
         return self.filter_by_date_range(queryset)
 
     def filter_by_time(self, queryset):
