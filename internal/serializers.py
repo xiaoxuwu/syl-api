@@ -3,6 +3,8 @@ from rest_framework import serializers
 from internal.models import Link, Event, Preference
 
 class LinkSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=False)
+
     class Meta:
         model = Link
         fields = ('id', 'url', 'creator', 'text', 'image', 'order', 'media_prefix')
