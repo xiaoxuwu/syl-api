@@ -43,6 +43,10 @@ class Link(models.Model):
     image = models.ImageField(blank=True, default=None, null=True)
     order = models.PositiveSmallIntegerField(unique=True, null=True)
 
+    @property
+    def media_prefix(self):
+        return settings.MEDIA_PREFIX
+
     def __str__(self):
         return self.url
 
