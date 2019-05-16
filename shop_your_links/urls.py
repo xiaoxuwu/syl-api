@@ -36,6 +36,7 @@ handler500 = internal.views.error_500
 # API routes
 router = routers.DefaultRouter()
 router.register(r'links', views.LinkViewSet, base_name='Links')
+router.register(r'events', views.EventViewSet, base_name='Events')
 router.register(r'preferences', views.PreferenceViewSet, base_name='Preferences')
 router.register(r'users', views.UserViewSet, base_name='Users')
 
