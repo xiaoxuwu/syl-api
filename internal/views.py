@@ -241,13 +241,21 @@ class PreferenceViewSet(mixins.ListModelMixin,
     """
     queryset = Preference.objects.all()
     serializer_class = PreferenceSerializer
-    permission_classes = (IsAuthenticated, IsOwner)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwner)
 
     def list(self, request):
         """
         Returns user's preferences
         """
-        queryset = Preference.objects.get(user=request.user)
+        username = self.request.query_params.get('username', None)
+        if username is not None:
+            try:
+                queryset = Preference.objects.get(user__username=username)
+            except:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            queryset = Preference.objects.get(user=request.user)
+
         serializer = PreferenceSerializer(queryset)
         return Response(serializer.data)
 
