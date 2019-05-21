@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
@@ -303,17 +304,16 @@ class UserViewSet(mixins.ListModelMixin,
     def instagram_auth(self, request):
         code = request.query_params.get('code', None)
         data = {
-            'client_id': 'f296ed176092447582392cbec8f2d914',
-            'client_secret': 'd13088e080284a899abbd5f1898273bf',
+            'client_id': settings.CLIENT_ID,
+            'client_secret': settings.CLIENT_SECRET,
             'grant_type': 'authorization_code',
-            'redirect_uri': 'http://shopyourlinks.com/igauth',
+            'redirect_uri': settings.REDIRECT_URI,
             'code': code,
         }
-        URL = 'https://api.instagram.com/oauth/access_token'
+        URL = settings.IG_ACCESS_TOKEN_URL
         response = requests.post(URL, data=data)
         if response.status_code is not status.HTTP_200_OK:
             return Response(response.json(), status=status.HTTP_400_BAD_REQUEST)
-        pdb.set_trace()
         self.store_token(request.user, response.json()['access_token'])
         return Response(response.json(), status=status.HTTP_200_OK)
 
