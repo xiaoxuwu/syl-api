@@ -7,12 +7,13 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
-from internal.models import Link, Event, Preference
+from internal.models import Link, Event, Preference, IGToken
 from internal.permissions import IsOwner, HasEventPermission
 from internal.serializers import LinkSerializer, EventSerializer, PreferenceSerializer, UserSerializer
 from datetime import datetime, timedelta
 from dateutil import parser
 import pdb
+import requests
 
 def error_404(request, *args, **argv):
     return JsonResponse({
@@ -49,7 +50,7 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = (AllowAny, IsOwner, HasEventPermission)
-    
+
     def parse_date(self, date):
         try:
             if date is not None:
@@ -66,7 +67,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def filter_by_date_range(self, queryset):
         """
-        Given optional start/end parameters, returns events in the specified 
+        Given optional start/end parameters, returns events in the specified
         custom time period.
         """
         start = self.request.query_params.get('start', None)
@@ -200,10 +201,10 @@ class EventViewSet(viewsets.ModelViewSet):
                     .values('period', 'event_ids')
         for q in queryset:
             data = list(EventSerializer(Event.objects.get(pk=id), many=False).data for id in q['event_ids'])
-            output.append({ 
-                'period': q['period'], 
-                'count': len(data), 
-                'events': data 
+            output.append({
+                'period': q['period'],
+                'count': len(data),
+                'events': data
             })
         return Response(output)
 
@@ -267,3 +268,29 @@ class UserViewSet(mixins.ListModelMixin,
         """
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='igauth', name='IG Auth')
+    def instagram_auth(self, request):
+        code = request.query_params.get('code', None)
+        data = {
+            'client_id': 'f296ed176092447582392cbec8f2d914',
+            'client_secret': 'd13088e080284a899abbd5f1898273bf',
+            'grant_type': 'authorization_code',
+            'redirect_uri': 'http://shopyourlinks.com/igauth',
+            'code': code,
+        }
+        URL = 'https://api.instagram.com/oauth/access_token'
+        response = requests.post(URL, data=data)
+        if response.status_code is not status.HTTP_200_OK:
+            return Response(response.json(), status=status.HTTP_400_BAD_REQUEST)
+        pdb.set_trace()
+        self.store_token(request.user, response.json()['access_token'])
+        return Response(response.json(), status=status.HTTP_200_OK)
+
+    def store_token(self, user, new_token):
+        curr_token = IGToken.objects.get(user=user)
+        if new_token is not None:
+            if curr_token is None:
+                curr_token = IGToken.objects.create(user=request.user)
+            curr_token.ig_token = new_token
+            curr_token.save()

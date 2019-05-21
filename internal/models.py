@@ -56,3 +56,14 @@ class Event(models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.link, self.time)
+
+class IGToken(models.Model):
+    user = models.OneToOneField(User, related_name='ig_token', on_delete=models.CASCADE)
+    ig_token = models.TextField()
+
+    class Meta:
+        verbose_name = 'Instagram Token'
+        verbose_name_plural = 'Instagram Tokens'
+
+    def __str__(self):
+        return self.ig_token
