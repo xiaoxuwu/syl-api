@@ -212,8 +212,8 @@ class EventViewSet(viewsets.ModelViewSet):
         Creates an event for the specified link_id. Admins may specify a time
         parameter.
         """
-        link_id = self.request.POST.get('link', None)
-        time = self.request.POST.get('time', None)
+        link_id = self.request.data.get('link', None)
+        time = self.request.data.get('time', None)
         time = self.parse_date(time)
 
         if link_id is not None:
