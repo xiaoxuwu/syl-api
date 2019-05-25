@@ -303,6 +303,8 @@ class UserViewSet(mixins.ListModelMixin,
     @action(detail=False, methods=['get'], url_path='igauth', name='IG Auth')
     def instagram_auth(self, request):
         code = request.query_params.get('code', None)
+        if code is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         data = {
             'client_id': settings.CLIENT_ID,
             'client_secret': settings.CLIENT_SECRET,
