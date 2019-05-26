@@ -270,11 +270,33 @@ class UserViewSet(mixins.ListModelMixin,
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['post'], url_path='create_account', name='Create Account')
+    def create_account(self, request):
+        code = request.data.get('code', None)
+        password = request.data.get('password', None)
+        if code is None or password is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        response = self.get_ig_response(code)
+        if response.status_code is not status.HTTP_200_OK:
+            return Response(response.json(), status=status.HTTP_400_BAD_REQUEST)
+        username = response.json()['user']['username']
+        user = User.objects.create_user(username=username, password=password)
+        self.store_token(response, user)
+        return Response(response.json(), status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['get'], url_path='igauth', name='IG Auth')
     def instagram_auth(self, request):
         code = request.query_params.get('code', None)
         if code is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        response = self.get_ig_response(code)
+        if response.status_code is not status.HTTP_200_OK:
+            return Response(response.json(), status=status.HTTP_400_BAD_REQUEST)
+        self.store_token(response, request.user)
+        return Response(response.json(), status=status.HTTP_200_OK)
+
+    def get_ig_response(self, code):
         data = {
             'client_id': settings.CLIENT_ID,
             'client_secret': settings.CLIENT_SECRET,
@@ -283,16 +305,16 @@ class UserViewSet(mixins.ListModelMixin,
             'code': code,
         }
         URL = settings.IG_ACCESS_TOKEN_URL
-        response = requests.post(URL, data=data)
-        if response.status_code is not status.HTTP_200_OK:
-            return Response(response.json(), status=status.HTTP_400_BAD_REQUEST)
-        self.store_token(request.user, response.json()['access_token'])
-        return Response(response.json(), status=status.HTTP_200_OK)
+        return requests.post(URL, data=data)
 
-    def store_token(self, user, new_token):
-        curr_token = IGToken.objects.get(user=user)
+    def store_token(self, response, user):
+        try:
+            curr_token = IGToken.objects.get(user=user)
+        except IGToken.DoesNotExist:
+            curr_token = None
+        new_token = response.json()['access_token']
         if new_token is not None:
             if curr_token is None:
-                curr_token = IGToken.objects.create(user=request.user)
+                curr_token = IGToken.objects.create(user=user)
             curr_token.ig_token = new_token
             curr_token.save()
