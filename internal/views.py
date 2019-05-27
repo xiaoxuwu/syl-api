@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.files import File
+from django.core.files.temp import NamedTemporaryFile
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
 from django.http import JsonResponse
 from django.utils import timezone, dateformat
@@ -14,9 +15,9 @@ from internal.permissions import IsOwner, HasEventPermission
 from internal.serializers import LinkSerializer, EventSerializer, PreferenceSerializer, UserSerializer
 from datetime import datetime, timedelta
 from dateutil import parser
+from urllib.request import urlopen
 import pdb
 import requests
-import urllib
 
 def error_404(request, *args, **argv):
     return JsonResponse({
@@ -315,7 +316,6 @@ class UserViewSet(mixins.ListModelMixin,
         username = response.json()['user']['username']
         user = User.objects.create_user(username=username, password=password)
         image_url = response.json()['user']['profile_picture']
-        user = User.objects.get(username="test2")
         self.store_token(response, user)
         self.download_and_store_image(user, image_url)
         return Response(response.json(), status=status.HTTP_200_OK)
@@ -355,6 +355,10 @@ class UserViewSet(mixins.ListModelMixin,
             curr_token.save()
 
     def download_and_store_image(self, user, image_url):
-        result = urllib.request.urlretrieve(image_url)
+        img_temp = NamedTemporaryFile(delete=True)
+        img_temp.write(urlopen(image_url).read())
+        img_temp.flush()
+
         preference = Preference.objects.get(user=user)
-        preference.profile_img.save(result[0].rsplit('/', 1)[1], File(open(result[0], 'rb')))
+        preference.profile_img.save('profile_pic.jpg', File(img_temp))
+        preference.save()
