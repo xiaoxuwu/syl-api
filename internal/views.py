@@ -170,8 +170,8 @@ class EventViewSet(viewsets.ModelViewSet):
         """
         output = []
         queryset = self.filter_by_link_or_user()
-        time = self.request.query_params.get('time', None)
-        method = self.request.query_params.get('method', None)
+        time = request.query_params.get('time', None)
+        method = request.query_params.get('method', None)
         if time is not None:
             time = time.lower()
 
