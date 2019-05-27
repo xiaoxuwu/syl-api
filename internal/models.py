@@ -15,8 +15,8 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class Preference(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    background_img = models.ImageField(null=True)
-    profile_img = models.ImageField(null=True)
+    background_img = models.ImageField(blank=True, default=None, null=True)
+    profile_img = models.ImageField(blank=True, default=None, null=True)
 
     @property
     def media_prefix(self):

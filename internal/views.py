@@ -170,8 +170,8 @@ class EventViewSet(viewsets.ModelViewSet):
         """
         output = []
         queryset = self.filter_by_link_or_user()
-        time = self.request.query_params.get('time', None)
-        method = self.request.query_params.get('method', None)
+        time = request.query_params.get('time', None)
+        method = request.query_params.get('method', None)
         if time is not None:
             time = time.lower()
 
@@ -212,8 +212,8 @@ class EventViewSet(viewsets.ModelViewSet):
         Creates an event for the specified link_id. Admins may specify a time
         parameter.
         """
-        link_id = self.request.POST.get('link', None)
-        time = self.request.POST.get('time', None)
+        link_id = self.request.data.get('link', None)
+        time = self.request.data.get('time', None)
         time = self.parse_date(time)
 
         if link_id is not None:
