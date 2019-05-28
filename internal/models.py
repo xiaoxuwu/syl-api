@@ -15,8 +15,8 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class Preference(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    background_img = models.ImageField(null=True)
-    profile_img = models.ImageField(null=True)
+    background_img = models.ImageField(blank=True, default=None, null=True)
+    profile_img = models.ImageField(blank=True, default=None, null=True)
 
     @property
     def media_prefix(self):
@@ -41,7 +41,7 @@ class Link(models.Model):
     url = models.URLField()
     text = models.CharField(max_length=200, blank=True, default=None)
     image = models.ImageField(blank=True, default=None, null=True)
-    order = models.PositiveSmallIntegerField(unique=True, null=True)
+    order = models.PositiveSmallIntegerField(null=True)
 
     @property
     def media_prefix(self):

@@ -20,6 +20,14 @@ class IsOwner(permissions.BasePermission):
         if view.basename == 'Events' and request.method in permissions.SAFE_METHODS and request.user == obj.link.creator:
             return True
 
+        # Allow read access for preferences
+        if view.basename == "Preferences" and request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Allow safe methods and POST for user
+        if view.basename == "Users" and (request.method in permissions.SAFE_METHODS or request.method == 'POST'):
+            return True
+
         # Other views allow owners read/write object permissions
         owner = None
         if view.basename == 'Links':

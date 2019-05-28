@@ -25,23 +25,34 @@ def error_500(request, *args, **argv):
         'details': 'server failure'
     }, status=500)
 
-class LinkViewSet(viewsets.ModelViewSet):
+def user_exists(username):
+    queryset = User.objects.filter(username=username)
+    return len(queryset) == 1
+
+class LinkViewSet(mixins.ListModelMixin,
+                  mixins.UpdateModelMixin,
+                  viewsets.GenericViewSet):
     """
     API endpoint that allows links to be viewed or edited.
     """
-    serializer_class = LinkSerializer
+    queryset = Link.objects.all()
+    serializer_class = LinkSerializer(many=True)
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwner)
 
-    def get_queryset(self):
+    def list(self, request):
       """
       Given a username parameter, returns only the links that the
       specified user created
       """
       queryset = Link.objects.all()
-      username = self.request.query_params.get('username', None)
+      username = request.query_params.get('username', None)
       if username is not None:
-          queryset = queryset.filter(creator__username=username)
-      return queryset
+        if not user_exists(username):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        queryset = Link.objects.filter(creator__username=username)
+
+      serializer = LinkSerializer(queryset, many=True)
+      return Response(serializer.data)
 
 class EventViewSet(viewsets.ModelViewSet):
     """
@@ -171,8 +182,8 @@ class EventViewSet(viewsets.ModelViewSet):
         """
         output = []
         queryset = self.filter_by_link_or_user()
-        time = self.request.query_params.get('time', None)
-        method = self.request.query_params.get('method', None)
+        time = request.query_params.get('time', None)
+        method = request.query_params.get('method', None)
         if time is not None:
             time = time.lower()
 
@@ -213,8 +224,8 @@ class EventViewSet(viewsets.ModelViewSet):
         Creates an event for the specified link_id. Admins may specify a time
         parameter.
         """
-        link_id = self.request.POST.get('link', None)
-        time = self.request.POST.get('time', None)
+        link_id = self.request.data.get('link', None)
+        time = self.request.data.get('time', None)
         time = self.parse_date(time)
 
         if link_id is not None:
@@ -242,13 +253,22 @@ class PreferenceViewSet(mixins.ListModelMixin,
     """
     queryset = Preference.objects.all()
     serializer_class = PreferenceSerializer
-    permission_classes = (IsAuthenticated, IsOwner)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwner)
 
     def list(self, request):
         """
         Returns user's preferences
         """
-        queryset = Preference.objects.get(user=request.user)
+        username = self.request.query_params.get('username', None)
+        if username is not None:
+            if not user_exists(username):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            queryset = Preference.objects.get(user__username=username)
+        elif not request.user.is_anonymous:
+            queryset = Preference.objects.get(user=request.user)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         serializer = PreferenceSerializer(queryset)
         return Response(serializer.data)
 
@@ -260,13 +280,23 @@ class UserViewSet(mixins.ListModelMixin,
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAuthenticated, IsOwner)
+    permission_classes = (IsOwner,)
 
     def list(self, request):
         """
         Returns user's info
         """
-        serializer = UserSerializer(request.user)
+        username = self.request.query_params.get('username', None)
+        if username is not None:
+            if not user_exists(username):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            queryset = User.objects.get(username=username)
+        elif not request.user.is_anonymous:
+            queryset = User.objects.get(username=request.user)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserSerializer(queryset)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='igauth', name='IG Auth')

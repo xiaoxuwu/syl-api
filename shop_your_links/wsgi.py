@@ -16,4 +16,4 @@ from shop_your_links import settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'shop_your_links.settings')
 
 application = get_wsgi_application()
-application = WhiteNoise(application, root=settings.MEDIA_ROOT, prefix=settings.MEDIA_PREFIX)
+application = WhiteNoise(application, root=settings.MEDIA_ROOT, prefix=settings.MEDIA_PREFIX, autorefresh=True)
