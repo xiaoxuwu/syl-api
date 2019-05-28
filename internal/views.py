@@ -279,11 +279,21 @@ class UserViewSet(mixins.ListModelMixin,
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAuthenticated, IsOwner)
+    permission_classes = (IsOwner,)
 
     def list(self, request):
         """
         Returns user's info
         """
-        serializer = UserSerializer(request.user)
+        username = self.request.query_params.get('username', None)
+        if username is not None:
+            if not user_exists(username):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            queryset = User.objects.get(username=username)
+        elif not request.user.is_anonymous:
+            queryset = User.objects.get(username=request.user)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserSerializer(queryset)
         return Response(serializer.data)
