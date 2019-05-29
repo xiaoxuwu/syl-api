@@ -315,14 +315,17 @@ class UserViewSet(mixins.ListModelMixin,
         else:
             last_name = ""
         image_url = request.data.get('profile_img', None)
+        pdb.set_trace()
         if username is None or password is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        # user = User.objects.create_user(username=username, password=password, first_name=first_name, last_name=last_name)
-        user = User.objects.get(username="test2")
-        self.store_token(ig_token, user)
-        self.download_and_store_image(user, image_url)
-        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+            return JsonResponse({'details': 'Username or password is empty'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.get(username=username)
+            return JsonResponse({'details': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            user = User.objects.create_user(username=username, password=password, first_name=first_name, last_name=last_name)
+            self.store_token(ig_token, user)
+            self.download_and_store_image(user, image_url)
+            return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='igauth', name='IG Auth')
     def instagram_auth(self, request):
