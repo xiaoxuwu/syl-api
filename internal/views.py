@@ -305,21 +305,24 @@ class UserViewSet(mixins.ListModelMixin,
 
     @action(detail=False, methods=['post'], url_path='create_account', name='Create Account')
     def create_account(self, request):
-        code = request.data.get('code', None)
+        ig_token = request.data.get('token', None)
+        username = request.data.get('username', None)
         password = request.data.get('password', None)
-        if code is None or password is None:
+        name = request.data.get('name', None).split(' ')
+        first_name = name[0]
+        if len(name) > 0:
+            last_name = name[-1]
+        else:
+            last_name = ""
+        image_url = request.data.get('profile_img', None)
+        if username is None or password is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        response = self.get_ig_response(code)
-        if response.status_code is not status.HTTP_200_OK:
-            return Response(response.json(), status=status.HTTP_400_BAD_REQUEST)
-        username = response.json()['user']['username']
-        user = User.objects.create_user(username=username, password=password)
-        image_url = response.json()['user']['profile_picture']
-        # user = User.objects.get(username="test2")
-        self.store_token(response, user)
+        # user = User.objects.create_user(username=username, password=password, first_name=first_name, last_name=last_name)
+        user = User.objects.get(username="test2")
+        self.store_token(ig_token, user)
         self.download_and_store_image(user, image_url)
-        return Response(response.json(), status=status.HTTP_200_OK)
+        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='igauth', name='IG Auth')
     def instagram_auth(self, request):
@@ -335,8 +338,8 @@ class UserViewSet(mixins.ListModelMixin,
     @action(detail=False, methods=['get'], url_path='ig_response', name='IG Response')
     def get_ig_response_endpoint(self, request):
         code = request.query_params.get('code', None)
-        # pdb.set_trace()
-        self.get_ig_response(code)
+        response = self.get_ig_response(code)
+        return Response(response.json(), status=status.HTTP_200_OK)
 
     def get_ig_response(self, code):
         data = {
@@ -349,12 +352,11 @@ class UserViewSet(mixins.ListModelMixin,
         URL = settings.IG_ACCESS_TOKEN_URL
         return requests.post(URL, data=data)
 
-    def store_token(self, response, user):
+    def store_token(self, new_token, user):
         try:
             curr_token = IGToken.objects.get(user=user)
         except IGToken.DoesNotExist:
             curr_token = None
-        new_token = response.json()['access_token']
         if new_token is not None:
             if curr_token is None:
                 curr_token = IGToken.objects.create(user=user)
