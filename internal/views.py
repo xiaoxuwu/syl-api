@@ -315,9 +315,6 @@ class UserViewSet(mixins.ListModelMixin,
         else:
             last_name = ""
         image_url = request.data.get('profile_img', None)
-        pdb.set_trace()
-        if username is None or password is None:
-            return JsonResponse({'details': 'Username or password is empty'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             user = User.objects.get(username=username)
             return JsonResponse({'details': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
@@ -342,7 +339,7 @@ class UserViewSet(mixins.ListModelMixin,
     def get_ig_response_endpoint(self, request):
         code = request.query_params.get('code', None)
         response = self.get_ig_response(code)
-        return Response(response.json(), status=status.HTTP_200_OK)
+        return Response(response.json(), status=response.status_code)
 
     def get_ig_response(self, code):
         data = {
