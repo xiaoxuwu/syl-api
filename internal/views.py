@@ -28,14 +28,12 @@ def user_exists(username):
     queryset = User.objects.filter(username=username)
     return len(queryset) == 1
 
-class LinkViewSet(mixins.ListModelMixin,
-                  mixins.UpdateModelMixin,
-                  viewsets.GenericViewSet):
+class LinkViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows links to be viewed or edited.
     """
     queryset = Link.objects.all()
-    serializer_class = LinkSerializer(many=True)
+    serializer_class = LinkSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwner)
 
     def list(self, request):
