@@ -82,7 +82,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'shop_your_links.wsgi.application'
 
 # https://github.com/ottoyiu/django-cors-headers
-# CORS_ORIGIN_ALLOW_ALL = True   
+# CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
 ]
@@ -163,3 +163,9 @@ ADMIN_INDEX_TITLE = "Data Models"
 
 # Whitenoise
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Instagram Auth
+CLIENT_ID = 'f296ed176092447582392cbec8f2d914'
+CLIENT_SECRET = 'd13088e080284a899abbd5f1898273bf'
+IG_ACCESS_TOKEN_URL = 'https://api.instagram.com/oauth/access_token'
+REDIRECT_URI = 'http://localhost:3000/influencer/create_account'

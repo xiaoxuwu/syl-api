@@ -21,6 +21,7 @@ class PreferenceSerializer(serializers.ModelSerializer):
         fields = ('id', 'background_img', 'profile_img', 'media_prefix')
 
 class UserSerializer(serializers.ModelSerializer):
+    ig_token = serializers.StringRelatedField()
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'email')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'ig_token')

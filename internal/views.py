@@ -1,5 +1,8 @@
+from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.files import File
+from django.core.files.temp import NamedTemporaryFile
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
 from django.http import JsonResponse
 from django.utils import timezone, dateformat
@@ -7,12 +10,14 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
-from internal.models import Link, Event, Preference
+from internal.models import Link, Event, Preference, IGToken
 from internal.permissions import IsOwner, HasEventPermission
 from internal.serializers import LinkSerializer, EventSerializer, PreferenceSerializer, UserSerializer
 from datetime import datetime, timedelta
 from dateutil import parser
+from urllib.request import urlopen
 import pdb
+import requests
 
 def error_404(request, *args, **argv):
     return JsonResponse({
@@ -58,7 +63,7 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = (AllowAny, IsOwner, HasEventPermission)
-    
+
     def parse_date(self, date):
         try:
             if date is not None:
@@ -75,7 +80,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def filter_by_date_range(self, queryset):
         """
-        Given optional start/end parameters, returns events in the specified 
+        Given optional start/end parameters, returns events in the specified
         custom time period.
         """
         start = self.request.query_params.get('start', None)
@@ -209,10 +214,10 @@ class EventViewSet(viewsets.ModelViewSet):
                     .values('period', 'event_ids')
         for q in queryset:
             data = list(EventSerializer(Event.objects.get(pk=id), many=False).data for id in q['event_ids'])
-            output.append({ 
-                'period': q['period'], 
-                'count': len(data), 
-                'events': data 
+            output.append({
+                'period': q['period'],
+                'count': len(data),
+                'events': data
             })
         return Response(output)
 
@@ -295,3 +300,72 @@ class UserViewSet(mixins.ListModelMixin,
 
         serializer = UserSerializer(queryset)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='create_account', name='Create Account')
+    def create_account(self, request):
+        ig_token = request.data.get('token', None)
+        username = request.data.get('username', None)
+        password = request.data.get('password', None)
+        name = request.data.get('name', None).split(' ')
+        first_name = name[0]
+        if len(name) > 0:
+            last_name = name[-1]
+        else:
+            last_name = ""
+        image_url = request.data.get('profile_img', None)
+        try:
+            user = User.objects.get(username=username)
+            return JsonResponse({'details': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            user = User.objects.create_user(username=username, password=password, first_name=first_name, last_name=last_name)
+            self.store_token(ig_token, user)
+            self.download_and_store_image(user, image_url)
+            return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='igauth', name='IG Auth')
+    def instagram_auth(self, request):
+        code = request.query_params.get('code', None)
+        if code is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        response = self.get_ig_response(code)
+        if response.status_code is not status.HTTP_200_OK:
+            return Response(response.json(), status=status.HTTP_400_BAD_REQUEST)
+        self.store_token(response, request.user)
+        return Response(response.json(), status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='ig_response', name='IG Response')
+    def get_ig_response_endpoint(self, request):
+        code = request.query_params.get('code', None)
+        response = self.get_ig_response(code)
+        return Response(response.json(), status=response.status_code)
+
+    def get_ig_response(self, code):
+        data = {
+            'client_id': settings.CLIENT_ID,
+            'client_secret': settings.CLIENT_SECRET,
+            'grant_type': 'authorization_code',
+            'redirect_uri': settings.REDIRECT_URI,
+            'code': code,
+        }
+        URL = settings.IG_ACCESS_TOKEN_URL
+        return requests.post(URL, data=data)
+
+    def store_token(self, new_token, user):
+        try:
+            curr_token = IGToken.objects.get(user=user)
+        except IGToken.DoesNotExist:
+            curr_token = None
+        if new_token is not None:
+            if curr_token is None:
+                curr_token = IGToken.objects.create(user=user)
+            curr_token.ig_token = new_token
+            curr_token.save()
+
+    def download_and_store_image(self, user, image_url):
+        img_temp = NamedTemporaryFile(delete=True)
+        img_temp.write(urlopen(image_url).read())
+        img_temp.flush()
+
+        preference = Preference.objects.get(user=user)
+        preference.profile_img.save('profile_pic.jpg', File(img_temp))
+        preference.save()
