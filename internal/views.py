@@ -183,13 +183,51 @@ class EventViewSet(viewsets.ModelViewSet):
         df.drop(columns=['link'], inplace=True)
         return (df.to_csv(index=False), json.loads(df.to_json(orient='values')))
 
+    def get_daily_data(self, data):
+        today = timezone.now()
+        date = today.date()
+        last_7_days = date - timedelta(days=7)
+        last_30_days = date - timedelta(days=30)
+        last_90_days = date - timedelta(days=90)
+
+        time = self.request.query_params.get('limit', None)
+        if time is not None:
+            time = time.lower()
+
+        start = self.request.query_params.get('start', None)
+        start = self.parse_date(start)
+        end = self.request.query_params.get('end', None)
+        end = self.parse_date(end)
+
+        start_date = list(data.keys())[1]
+        end_date = date
+        if time == '7days':
+            start_date = last_7_days
+        elif time == '30days':
+            start_date = last_30_days
+        elif time == '90days':
+            start_date = last_90_days
+        else:
+            if start is not None:
+                start_date = start
+            if end is not None:
+                end_date = end.replace(hour=23, minute=59, second=59)
+
+        output = []
+        daterange = pd.date_range(start_date, end_date)
+        for single_date in daterange:
+            output.append({
+                'period': single_date.date(),
+                'count': data[single_date.date()]['count'] if single_date.date() in data else 0,
+                'events': data[single_date.date()]['events'] if single_date.date() in data else [],
+            })
+        return output
+
     @action(detail=False, methods=['get'], url_path='stats', name='Event Stats')
     def get_event_stats(self, request):
         """
         Given a method parameter, returns event data in the specified format. Can
         return 'count' statistics or the original Event data.
-        TODO: figure out return format according to recharts docs
-        TODO: restrict date range for daily/weekly/monthly/yearly data
         TODO: stats by device type, geographic region, time of day/week
         """
         output = []
@@ -222,21 +260,23 @@ class EventViewSet(viewsets.ModelViewSet):
         }.get(time).order_by('period')
 
         # Fetches Event entry by primary key
-        output = []
+        output = {}
         queryset = queryset \
                     .values('period') \
                     .annotate(event_ids=ArrayAgg('id')) \
                     .values('period', 'event_ids')
         for q in queryset:
             data = list(EventSerializer(Event.objects.get(pk=id), many=False).data for id in q['event_ids'])
-            output.append({
+            output[q['period'].date()] = {
                 'period': q['period'],
                 'count': len(data),
                 'events': data,
-            })
+            }
+
+        daily_data = self.get_daily_data(output)
 
         return Response({
-            'data': output,
+            'data': daily_data,
             'raw_csv': raw_data,
             'raw': raw_json
         })
