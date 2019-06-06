@@ -18,6 +18,7 @@ from dateutil import parser
 from urllib.request import urlopen
 import pdb
 import requests
+import pandas as pd
 
 def error_404(request, *args, **argv):
     return JsonResponse({
@@ -173,6 +174,14 @@ class EventViewSet(viewsets.ModelViewSet):
         queryset = self.filter_by_time(queryset)
         return queryset
 
+    def generate_csv(self, queryset):
+        df = pd.DataFrame(EventSerializer(queryset, many=True).data)
+        df['url'] = df.link.apply(lambda row: row['url'])
+        df['order'] = df.link.apply(lambda row: row['order'])
+        df['text'] = df.link.apply(lambda row: row['text'])
+        df.drop(columns=['link'], inplace=True)
+        return df.to_csv(index=False)
+
     @action(detail=False, methods=['get'], url_path='stats', name='Event Stats')
     def get_event_stats(self, request):
         """
@@ -199,14 +208,17 @@ class EventViewSet(viewsets.ModelViewSet):
             serializer = self.serializer_class(queryset, many=True)
             return Response(serializer.data)
 
+        queryset = self.filter_by_time(queryset)
+
+        # generate csv data
+        raw_data = self.generate_csv(queryset)
+
         queryset = {
             'daily': queryset.annotate(period=TruncDay('time')),
             'weekly': queryset.annotate(period=TruncWeek('time')),
             'monthly': queryset.annotate(period=TruncMonth('time')),
             'yearly': queryset.annotate(period=TruncYear('time')),
         }.get(time).order_by('period')
-
-        queryset = self.filter_by_time(queryset)
 
         # Fetches Event entry by primary key
         output = []
@@ -219,7 +231,8 @@ class EventViewSet(viewsets.ModelViewSet):
             output.append({
                 'period': q['period'],
                 'count': len(data),
-                'events': data
+                'events': data,
+                'csv': raw_data
             })
         return Response(output)
 
