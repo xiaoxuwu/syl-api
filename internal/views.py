@@ -232,9 +232,12 @@ class EventViewSet(viewsets.ModelViewSet):
                 'period': q['period'],
                 'count': len(data),
                 'events': data,
-                'csv': raw_data
             })
-        return Response(output)
+
+        return Response({
+            'data': output,
+            'raw_csv': raw_data
+        })
 
     def create(self, request):
         """
