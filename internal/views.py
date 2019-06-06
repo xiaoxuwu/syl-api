@@ -135,7 +135,7 @@ class EventViewSet(viewsets.ModelViewSet):
         last_30_days = today.date() - timedelta(days=30)
         last_90_days = today.date() - timedelta(days=90)
 
-        time = self.request.query_params.get('time', None)
+        time = self.request.query_params.get('limit', None)
         if time is not None:
             time = time.lower()
             return {
@@ -205,6 +205,8 @@ class EventViewSet(viewsets.ModelViewSet):
             'monthly': queryset.annotate(period=TruncMonth('time')),
             'yearly': queryset.annotate(period=TruncYear('time')),
         }.get(time).order_by('period')
+
+        queryset = self.filter_by_time(queryset)
 
         # Fetches Event entry by primary key
         output = []
@@ -313,6 +315,7 @@ class UserViewSet(mixins.ListModelMixin,
         else:
             last_name = ""
         image_url = request.data.get('profile_img', None)
+
         try:
             user = User.objects.get(username=username)
             return JsonResponse({'details': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)

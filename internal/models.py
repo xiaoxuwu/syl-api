@@ -48,7 +48,7 @@ class Link(models.Model):
         return settings.MEDIA_PREFIX
 
     def __str__(self):
-        return self.url
+        return '%s: %s' % (self.creator, self.url)
 
 class Event(models.Model):
     link = models.ForeignKey(Link, on_delete=models.CASCADE)
