@@ -19,6 +19,7 @@ from urllib.request import urlopen
 import pdb
 import requests
 import pandas as pd
+import json
 
 def error_404(request, *args, **argv):
     return JsonResponse({
@@ -180,7 +181,7 @@ class EventViewSet(viewsets.ModelViewSet):
         df['order'] = df.link.apply(lambda row: row['order'])
         df['text'] = df.link.apply(lambda row: row['text'])
         df.drop(columns=['link'], inplace=True)
-        return df.to_csv(index=False)
+        return (df.to_csv(index=False), json.loads(df.to_json(orient='values')))
 
     @action(detail=False, methods=['get'], url_path='stats', name='Event Stats')
     def get_event_stats(self, request):
@@ -211,7 +212,7 @@ class EventViewSet(viewsets.ModelViewSet):
         queryset = self.filter_by_time(queryset)
 
         # generate csv data
-        raw_data = self.generate_csv(queryset)
+        (raw_data, raw_json) = self.generate_csv(queryset)
 
         queryset = {
             'daily': queryset.annotate(period=TruncDay('time')),
@@ -236,7 +237,8 @@ class EventViewSet(viewsets.ModelViewSet):
 
         return Response({
             'data': output,
-            'raw_csv': raw_data
+            'raw_csv': raw_data,
+            'raw': raw_json
         })
 
     def create(self, request):
