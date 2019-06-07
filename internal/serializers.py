@@ -7,7 +7,7 @@ class LinkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Link
-        fields = ('id', 'url', 'creator', 'text', 'image', 'order', 'media_prefix')
+        fields = ('id', 'url', 'creator', 'text', 'image', 'order', 'created', 'media_prefix')
 
 class EventSerializer(serializers.ModelSerializer):
     link = LinkSerializer(read_only=True)
