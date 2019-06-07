@@ -3,7 +3,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
-from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
+from django.db.models.functions import TruncDate, TruncWeek, TruncMonth, TruncYear
 from django.http import JsonResponse
 from django.utils import timezone, dateformat
 from rest_framework import viewsets, status, mixins
@@ -94,11 +94,11 @@ class EventViewSet(viewsets.ModelViewSet):
 
         if start is not None or end is not None:
             if start is not None and end is not None:
-                return queryset.filter(time__range=[start, end])
+                return queryset.filter(date__range=[start, end])
             elif start:
-                return queryset.filter(time__gte=start)
+                return queryset.filter(date__gte=start)
             else:
-                return queryset.filter(time__lte=end)
+                return queryset.filter(date__lte=end)
         return queryset
 
     def filter_by_month_or_year(self, queryset):
@@ -115,11 +115,11 @@ class EventViewSet(viewsets.ModelViewSet):
 
         if month_str is not None and 1 <= month_int <= 12:
             if year_str is not None and 1999 <= year_int <= curr_year_int:
-                return queryset.filter(time__year=year_str, time__month=month_str)
+                return queryset.filter(date__year=year_str, date__month=month_str)
             elif curr_year_str is not None:
-                return queryset.filter(time__year=curr_year_str, time__month=month_str)
+                return queryset.filter(date__year=curr_year_str, date__month=month_str)
         elif year_str is not None and 1999 <= year_int <= curr_year_int:
-            return queryset.filter(time__year=year_str)
+            return queryset.filter(date__year=year_str)
         return self.filter_by_date_range(queryset)
 
     def filter_by_time(self, queryset):
@@ -141,13 +141,13 @@ class EventViewSet(viewsets.ModelViewSet):
         if time is not None:
             time = time.lower()
             return {
-                'latest': queryset.order_by('-time')[:1],
-                'today': queryset.filter(time__date=date),
-                'week': queryset.filter(time__range=[last_monday, this_monday]),
-                'month': queryset.filter(time__year=year, time__month=month),
-                '7days': queryset.filter(time__range=[last_7_days, today]),
-                '30days': queryset.filter(time__range=[last_30_days, today]),
-                '90days': queryset.filter(time__range=[last_90_days, today]),
+                'latest': queryset.order_by('-date')[:1],
+                'today': queryset.filter(date=date),
+                'week': queryset.filter(date__range=[last_monday, this_monday]),
+                'month': queryset.filter(date__year=year, date__month=month),
+                '7days': queryset.filter(date__range=[last_7_days, today]),
+                '30days': queryset.filter(date__range=[last_30_days, today]),
+                '90days': queryset.filter(date__range=[last_90_days, today]),
             }.get(time, self.filter_by_month_or_year(queryset))
         return self.filter_by_month_or_year(queryset)
 
@@ -176,11 +176,13 @@ class EventViewSet(viewsets.ModelViewSet):
         return queryset
 
     def generate_csv(self, queryset):
-        df = pd.DataFrame(EventSerializer(queryset, many=True).data)
-        df['url'] = df.link.apply(lambda row: row['url'])
-        df['order'] = df.link.apply(lambda row: row['order'])
-        df['text'] = df.link.apply(lambda row: row['text'])
-        df.drop(columns=['link'], inplace=True)
+        data = EventSerializer(queryset, many=True).data
+        df = pd.DataFrame(data)
+        if not df.empty:
+            df['url'] = df.link.apply(lambda row: row['url'])
+            df['order'] = df.link.apply(lambda row: row['order'])
+            df['text'] = df.link.apply(lambda row: row['text'])
+            df.drop(columns=['link'], inplace=True)
         return (df.to_csv(index=False), json.loads(df.to_json(orient='values')))
 
     def get_daily_data(self, data):
@@ -199,7 +201,9 @@ class EventViewSet(viewsets.ModelViewSet):
         end = self.request.query_params.get('end', None)
         end = self.parse_date(end)
 
-        start_date = list(data.keys())[1]
+        start_date = date
+        if data:
+            start_date = list(data.keys())[0]
         end_date = date
         if time == '7days':
             start_date = last_7_days
@@ -217,9 +221,9 @@ class EventViewSet(viewsets.ModelViewSet):
         daterange = pd.date_range(start_date, end_date)
         for single_date in daterange:
             output.append({
-                'period': single_date.date(),
-                'count': data[single_date.date()]['count'] if single_date.date() in data else 0,
-                'events': data[single_date.date()]['events'] if single_date.date() in data else [],
+                'period': single_date,
+                'count': data[single_date]['count'] if single_date in data else 0,
+                'events': data[single_date]['events'] if single_date in data else [],
             })
         return output
 
@@ -253,10 +257,10 @@ class EventViewSet(viewsets.ModelViewSet):
         (raw_data, raw_json) = self.generate_csv(queryset)
 
         queryset = {
-            'daily': queryset.annotate(period=TruncDay('time')),
-            'weekly': queryset.annotate(period=TruncWeek('time')),
-            'monthly': queryset.annotate(period=TruncMonth('time')),
-            'yearly': queryset.annotate(period=TruncYear('time')),
+            'daily': queryset.annotate(period=TruncDate('date')),
+            'weekly': queryset.annotate(period=TruncWeek('date')),
+            'monthly': queryset.annotate(period=TruncMonth('date')),
+            'yearly': queryset.annotate(period=TruncYear('date')),
         }.get(time).order_by('period')
 
         # Fetches Event entry by primary key
@@ -267,7 +271,7 @@ class EventViewSet(viewsets.ModelViewSet):
                     .values('period', 'event_ids')
         for q in queryset:
             data = list(EventSerializer(Event.objects.get(pk=id), many=False).data for id in q['event_ids'])
-            output[q['period'].date()] = {
+            output[q['period']] = {
                 'period': q['period'],
                 'count': len(data),
                 'events': data,
@@ -287,13 +291,13 @@ class EventViewSet(viewsets.ModelViewSet):
         parameter.
         """
         link_id = self.request.data.get('link', None)
-        time = self.request.data.get('time', None)
-        time = self.parse_date(time)
+        # time = self.request.data.get('time', None)
+        # time = self.parse_date(time)
 
         if link_id is not None:
             event = Event.objects.create(link_id=link_id)
-            if request.user.is_superuser and time is not None:
-                event = Event.objects.create(link_id=link_id, time=time)
+            # if request.user.is_superuser and time is not None:
+            #     event = Event.objects.create(link_id=link_id, time=time)
             event.save()
             serializer = EventSerializer(event)
             return Response(serializer.data)
