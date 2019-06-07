@@ -53,8 +53,8 @@ class Link(models.Model):
 
 class Event(models.Model):
     link = models.ForeignKey(Link, on_delete=models.SET_NULL, null=True)
-    date = models.DateField(auto_now_add=True)
-    time = models.TimeField(auto_now_add=True)
+    date = models.DateField(default=now)
+    time = models.TimeField(default=now)
 
     def __str__(self):
         return '%s (%s)' % (self.link, self.date)
