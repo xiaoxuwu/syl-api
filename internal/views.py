@@ -249,7 +249,7 @@ class EventViewSet(viewsets.ModelViewSet):
         if method is not None:
             if method.lower() == 'links':
                 result = []
-                queryset = queryset.values('link', 'date').annotate(count=Count('link'))
+                queryset = queryset.values('link').annotate(count=Count('link'))
                 links_queryset = Link.objects.all()
                 links_queryset = Link.objects.filter(creator__username=self.request.user)
                 link_ids = []
