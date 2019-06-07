@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
+from django.db.models import Count
 from django.db.models.functions import TruncDate, TruncWeek, TruncMonth, TruncYear
 from django.http import JsonResponse
 from django.utils import timezone, dateformat
@@ -238,6 +239,21 @@ class EventViewSet(viewsets.ModelViewSet):
         queryset = self.filter_by_link_or_user()
         time = request.query_params.get('time', None)
         method = request.query_params.get('method', None)
+
+        # Gets all click counts per link for the given user
+        if method is not None:
+            if method.lower() == 'links':
+                result = []
+                queryset = queryset.values('link', 'date').annotate(count=Count('link'))
+                for q in queryset:
+                    link = LinkSerializer(Link.objects.get(pk=q['link']), many=False).data
+                    result.append({
+                        'date': q['date'],
+                        'url': link['url'],
+                        'count': q['count'],
+                    })
+                return Response({ 'data': result })
+
         if time is not None:
             time = time.lower()
 
@@ -271,6 +287,7 @@ class EventViewSet(viewsets.ModelViewSet):
                     .values('period', 'event_ids')
         for q in queryset:
             data = list(EventSerializer(Event.objects.get(pk=id), many=False).data for id in q['event_ids'])
+
             output[q['period']] = {
                 'period': q['period'],
                 'count': len(data),
