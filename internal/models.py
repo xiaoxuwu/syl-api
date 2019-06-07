@@ -42,20 +42,22 @@ class Link(models.Model):
     text = models.CharField(max_length=200, blank=True, default=None)
     image = models.ImageField(blank=True, default=None, null=True)
     order = models.PositiveSmallIntegerField(null=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     @property
     def media_prefix(self):
         return settings.MEDIA_PREFIX
 
     def __str__(self):
-        return self.url
+        return '%s: %s' % (self.creator, self.url)
 
 class Event(models.Model):
-    link = models.ForeignKey(Link, on_delete=models.CASCADE)
-    time = models.DateTimeField(default=now)
+    link = models.ForeignKey(Link, on_delete=models.SET_NULL, null=True)
+    date = models.DateField(auto_now_add=True)
+    time = models.TimeField(auto_now_add=True)
 
     def __str__(self):
-        return '%s (%s)' % (self.link, self.time)
+        return '%s (%s)' % (self.link, self.date)
 
 class IGToken(models.Model):
     user = models.OneToOneField(User, related_name='ig_token', on_delete=models.CASCADE)

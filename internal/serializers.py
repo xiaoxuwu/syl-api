@@ -7,13 +7,13 @@ class LinkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Link
-        fields = ('id', 'url', 'creator', 'text', 'image', 'order', 'media_prefix')
+        fields = ('id', 'url', 'creator', 'text', 'image', 'order', 'created', 'media_prefix')
 
 class EventSerializer(serializers.ModelSerializer):
     link = LinkSerializer(read_only=True)
     class Meta:
         model = Event
-        fields = ('id', 'link', 'time')
+        fields = ('id', 'link', 'date', 'time')
 
 class PreferenceSerializer(serializers.ModelSerializer):
     background_img = serializers.ImageField(required=False, allow_null=True)
