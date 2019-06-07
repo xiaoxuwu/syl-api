@@ -42,6 +42,7 @@ class Link(models.Model):
     text = models.CharField(max_length=200, blank=True, default=None)
     image = models.ImageField(blank=True, default=None, null=True)
     order = models.PositiveSmallIntegerField(null=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     @property
     def media_prefix(self):
