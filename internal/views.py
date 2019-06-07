@@ -240,18 +240,37 @@ class EventViewSet(viewsets.ModelViewSet):
         time = request.query_params.get('time', None)
         method = request.query_params.get('method', None)
 
-        # Gets all click counts per link for the given user
+        # Gets all click counts per link for the given user. Also retrieves empty (unclicked user links)
         if method is not None:
             if method.lower() == 'links':
                 result = []
                 queryset = queryset.values('link', 'date').annotate(count=Count('link'))
+                links_queryset = Link.objects.all()
+                links_queryset = Link.objects.filter(creator__username=self.request.user)
+                link_ids = []
                 for q in queryset:
                     link = LinkSerializer(Link.objects.get(pk=q['link']), many=False).data
+                    link_ids.append(link['id'])
                     result.append({
-                        'date': q['date'],
+                        'id': link['id'],
+                        'title': link['text'],
+                        'date': link['created'],
                         'url': link['url'],
+                        'img': link['image'],
+                        'media_prefix': link['media_prefix'],
                         'count': q['count'],
                     })
+                for link in links_queryset:
+                    if link.id not in link_ids:
+                        result.append({
+                            'id': link.id,
+                            'title': link.text,
+                            'date': link.created,
+                            'url': link.url,
+                            'img': link.image if link.image else None,
+                            'media_prefix': link.media_prefix,
+                            'count': 0,
+                        })
                 return Response({ 'data': result })
 
         if time is not None:
