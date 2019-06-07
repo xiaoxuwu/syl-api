@@ -53,10 +53,11 @@ class Link(models.Model):
 
 class Event(models.Model):
     link = models.ForeignKey(Link, on_delete=models.SET_NULL, null=True)
-    time = models.DateTimeField(default=now)
+    date = models.DateField(auto_now_add=True)
+    time = models.TimeField(auto_now_add=True)
 
     def __str__(self):
-        return '%s (%s)' % (self.link, self.time)
+        return '%s (%s)' % (self.link, self.date)
 
 class IGToken(models.Model):
     user = models.OneToOneField(User, related_name='ig_token', on_delete=models.CASCADE)

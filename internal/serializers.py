@@ -13,7 +13,7 @@ class EventSerializer(serializers.ModelSerializer):
     link = LinkSerializer(read_only=True)
     class Meta:
         model = Event
-        fields = ('id', 'link', 'time')
+        fields = ('id', 'link', 'date', 'time')
 
 class PreferenceSerializer(serializers.ModelSerializer):
     class Meta:
