@@ -221,6 +221,7 @@ class EventViewSet(viewsets.ModelViewSet):
         output = []
         daterange = pd.date_range(start_date, end_date)
         for single_date in daterange:
+            single_date = single_date.to_pydatetime().date()
             output.append({
                 'period': single_date,
                 'count': data[single_date]['count'] if single_date in data else 0,
