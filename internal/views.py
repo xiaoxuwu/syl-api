@@ -229,6 +229,10 @@ class EventViewSet(viewsets.ModelViewSet):
             })
         return output
 
+    def generate_links_csv(self, data):
+        df = pd.DataFrame(data)
+        return (df.to_csv(index=False), json.loads(df.to_json(orient='values')))
+
     @action(detail=False, methods=['get'], url_path='stats', name='Event Stats')
     def get_event_stats(self, request):
         """
@@ -272,7 +276,12 @@ class EventViewSet(viewsets.ModelViewSet):
                             'media_prefix': link.media_prefix,
                             'count': 0,
                         })
-                return Response({ 'data': result })
+                (link_csv, link_json) = self.generate_links_csv(result)
+                return Response({ 
+                    'data': result, 
+                    'raw_csv': link_csv,
+                    'raw': link_json,
+                })
 
         if time is not None:
             time = time.lower()
