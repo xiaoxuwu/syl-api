@@ -38,7 +38,7 @@ def save_user_preference(sender, instance, **kwargs):
 
 class Link(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
-    url = models.URLField()
+    url = models.CharField(max_length=200)
     text = models.CharField(max_length=200, blank=True, default=None)
     image = models.ImageField(blank=True, default=None, null=True)
     order = models.PositiveSmallIntegerField(null=True)
