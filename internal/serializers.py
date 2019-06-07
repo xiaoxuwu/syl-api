@@ -16,6 +16,8 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ('id', 'link', 'time')
 
 class PreferenceSerializer(serializers.ModelSerializer):
+    background_img = serializers.ImageField(required=False, allow_null=True)
+    profile_img = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = Preference
         fields = ('id', 'background_img', 'profile_img', 'media_prefix')
